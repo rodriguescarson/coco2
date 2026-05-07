@@ -1,7 +1,8 @@
-import { ScrollView, View, StyleSheet, Pressable, Image, Linking, Platform } from 'react-native';
+import { ScrollView, View, StyleSheet, Pressable, Image, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from '../components/ui/Text';
 import { Card } from '../components/ui/Card';
 import { Pill } from '../components/ui/Pill';
@@ -160,28 +161,31 @@ function PhotoCard({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }
   return (
     <View style={{ marginTop: spacing.xl, paddingHorizontal: spacing.lg }}>
       <View style={[styles.photoFrame, { backgroundColor: colors.surfaceMuted, borderColor: colors.border }]}>
-        {Platform.OS === 'web' ? (
-          // On web we can show a fallback collage; replace with a real image at /assets/about/team.jpg
-          <Image
-            source={require('../assets/icon.png')}
-            style={styles.photoFallback}
-            accessibilityLabel="Green Ribbon Army at SIH 2022 Grand Finale"
-          />
-        ) : (
-          <Image
-            source={require('../assets/icon.png')}
-            style={styles.photoFallback}
-            accessibilityLabel="Green Ribbon Army at SIH 2022 Grand Finale"
-          />
-        )}
-        <View style={styles.photoCaption}>
-          <Text variant="micro" tone="onPrimary" style={{ opacity: 0.85 }}>HUBLI · 25 AUG 2022</Text>
-          <Text variant="bodyMedium" tone="onPrimary">Green Ribbon Army at SIH Grand Finale</Text>
-          <Text variant="caption" tone="onPrimary" style={{ opacity: 0.85, marginTop: 4 }}>
-            Drop the team photo at assets/about/team.jpg to replace this placeholder.
-          </Text>
+        <Image
+          source={require('../assets/about/team.jpg')}
+          style={styles.photo}
+          accessibilityLabel="Green Ribbon Army at SIH 2022 Grand Finale"
+        />
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.15)', 'rgba(0,0,0,0.78)']}
+          locations={[0, 0.45, 1]}
+          style={styles.photoGradient}
+          pointerEvents="none"
+        />
+        <View style={styles.photoCaption} pointerEvents="none">
+          <View style={styles.captionTagRow}>
+            <View style={styles.captionTag}>
+              <View style={styles.captionDot} />
+              <Text variant="micro" style={styles.captionTagText}>SIH 2022 GRAND FINALE</Text>
+            </View>
+          </View>
+          <Text variant="title" style={styles.captionTitle}>Green Ribbon Army</Text>
+          <Text variant="caption" style={styles.captionSub}>KLE Institute of Technology · Hubli</Text>
         </View>
       </View>
+      <Text variant="micro" tone="dim" style={{ marginTop: spacing.sm, textAlign: 'center' }}>
+        Carson · OYSTURN · Rea · Druvi · Yash · Jaysel  +  Dr. Vivek Jog · Prof. Amey Kerkar
+      </Text>
     </View>
   );
 }
@@ -224,22 +228,58 @@ function Divider({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }) 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
   photoFrame: {
-    height: 220,
+    height: 280,
     borderRadius: radius.lg,
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
     justifyContent: 'flex-end',
   },
-  photoFallback: {
+  photo: {
     ...StyleSheet.absoluteFillObject,
     width: '100%',
     height: '100%',
-    opacity: 0.18,
     resizeMode: 'cover',
   },
+  photoGradient: {
+    ...StyleSheet.absoluteFillObject,
+  },
   photoCaption: {
-    backgroundColor: 'rgba(14, 138, 95, 0.92)',
     padding: spacing.lg,
+  },
+  captionTagRow: {
+    flexDirection: 'row',
+  },
+  captionTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderColor: 'rgba(255,255,255,0.35)',
+    borderWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  captionDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#3CD49B',
+    marginRight: 6,
+  },
+  captionTagText: {
+    color: '#FFFFFF',
+    letterSpacing: 0.8,
+    fontWeight: '700',
+  },
+  captionTitle: {
+    color: '#FFFFFF',
+    marginTop: 8,
+    textShadowColor: 'rgba(0,0,0,0.4)',
+    textShadowRadius: 8,
+  },
+  captionSub: {
+    color: 'rgba(255,255,255,0.85)',
+    marginTop: 2,
   },
   personRow: {
     flexDirection: 'row',
