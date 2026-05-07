@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,26 +15,20 @@ export default function Sleep() {
   const { colors } = useTheme();
   const [selected, setSelected] = useState<string | null>(null);
   const sleepMeds = meditations.filter((m) => m.category === 'sleep');
-
-  const source = useMemo(() => {
-    if (!selected) return null;
-    const found = sleepSoundCatalog.find((s) => s.id === selected);
-    return found ? { uri: found.uri } : null;
-  }, [selected]);
-
-  const track = useTrack(source, { loop: true, volume: 0.7 });
+  const track = useTrack({ loop: true, volume: 0.7 });
 
   function pick(id: string) {
     if (id === selected) {
       track.stop();
       setSelected(null);
       tap('select');
-    } else {
-      setSelected(id);
-      // play kicks off after the source updates via useTrack
-      setTimeout(() => track.play(), 100);
-      tap('success');
+      return;
     }
+    const found = sleepSoundCatalog.find((s) => s.id === id);
+    if (!found) return;
+    setSelected(id);
+    track.playSource({ uri: found.uri });
+    tap('success');
   }
 
   return (

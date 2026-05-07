@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,22 +25,18 @@ export default function Meditate() {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const list = filter === 'all' ? meditations : meditations.filter((m) => m.category === filter);
-  const source = useMemo(() => {
-    if (!activeId) return null;
-    const found = meditationCatalog.find((m) => m.id === activeId);
-    return found ? { uri: found.uri } : null;
-  }, [activeId]);
-
-  const track = useTrack(source, { loop: false, volume: 0.85 });
+  const track = useTrack({ loop: false, volume: 0.85 });
 
   function play(id: string) {
     if (id === activeId) {
       track.toggle();
-    } else {
-      setActiveId(id);
-      setTimeout(() => track.play(), 100);
-      tap('success');
+      return;
     }
+    const found = meditationCatalog.find((m) => m.id === id);
+    if (!found) return;
+    setActiveId(id);
+    track.playSource({ uri: found.uri });
+    tap('success');
   }
 
   return (
