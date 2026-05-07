@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ScrollView, View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,7 @@ import { useTheme, spacing } from '../lib/theme';
 import { meditations, Meditation } from '../lib/data';
 import { meditationCatalog, useTrack } from '../lib/audio';
 import { tap } from '../lib/haptics';
+import { useScreenTracking, Analytics } from '../lib/analytics';
 
 const cats: { id: Meditation['category'] | 'all'; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -20,9 +21,11 @@ const cats: { id: Meditation['category'] | 'all'; label: string }[] = [
 ];
 
 export default function Meditate() {
+  useScreenTracking('meditate');
   const { colors } = useTheme();
   const [filter, setFilter] = useState<typeof cats[number]['id']>('all');
   const [activeId, setActiveId] = useState<string | null>(null);
+  const startRef = useRef<{ id: string; at: number } | null>(null);
 
   const list = filter === 'all' ? meditations : meditations.filter((m) => m.category === filter);
   const track = useTrack({ loop: false, volume: 0.85 });
@@ -32,10 +35,15 @@ export default function Meditate() {
       track.toggle();
       return;
     }
+    if (startRef.current) {
+      void Analytics.track('meditation_ended', { id: startRef.current.id, durationMs: Date.now() - startRef.current.at });
+    }
     const found = meditationCatalog.find((m) => m.id === id);
     if (!found) return;
     setActiveId(id);
     track.playSource({ uri: found.uri });
+    void Analytics.track('meditation_started', { id });
+    startRef.current = { id, at: Date.now() };
     tap('success');
   }
 

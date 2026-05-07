@@ -8,8 +8,10 @@ import { Card } from '../../components/ui/Card';
 import { useTheme, spacing, radius } from '../../lib/theme';
 import { Storage, streakFromCheckins, UserProfile, Prefs } from '../../lib/storage';
 import { useAuth, signOut } from '../../lib/auth';
+import { useScreenTracking } from '../../lib/analytics';
 
 export default function Profile() {
+  useScreenTracking('profile');
   const { colors } = useTheme();
   const auth = useAuth();
   const [user, setUser] = useState<UserProfile>({});
@@ -115,6 +117,21 @@ export default function Profile() {
               <View style={{ flex: 1, marginLeft: spacing.md }}>
                 <Text variant="bodyMedium">Therapy bookings</Text>
                 <Text variant="caption" tone="dim">View, reschedule, or cancel</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+            </View>
+          </Card>
+        </Section>
+
+        <Section title="Your activity">
+          <Card onPress={() => router.push('/activity')} accessibilityLabel="See your activity">
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={[styles.iconRound, { backgroundColor: colors.primarySoft }]}>
+                <Ionicons name="bar-chart-outline" size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text variant="bodyMedium">Time, sessions & habits</Text>
+                <Text variant="caption" tone="dim">Where you spend time, what you use most</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
             </View>

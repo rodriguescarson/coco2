@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ScrollView, View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,24 +10,36 @@ import { useTheme, spacing, radius } from '../lib/theme';
 import { meditations } from '../lib/data';
 import { sleepSoundCatalog, useTrack } from '../lib/audio';
 import { tap } from '../lib/haptics';
+import { useScreenTracking, Analytics } from '../lib/analytics';
 
 export default function Sleep() {
+  useScreenTracking('sleep');
   const { colors } = useTheme();
   const [selected, setSelected] = useState<string | null>(null);
+  const startRef = useRef<{ id: string; at: number } | null>(null);
   const sleepMeds = meditations.filter((m) => m.category === 'sleep');
   const track = useTrack({ loop: true, volume: 0.7 });
 
   function pick(id: string) {
     if (id === selected) {
       track.stop();
+      if (startRef.current) {
+        void Analytics.track('sound_stopped', { id: startRef.current.id, durationMs: Date.now() - startRef.current.at });
+        startRef.current = null;
+      }
       setSelected(null);
       tap('select');
       return;
+    }
+    if (startRef.current) {
+      void Analytics.track('sound_stopped', { id: startRef.current.id, durationMs: Date.now() - startRef.current.at });
     }
     const found = sleepSoundCatalog.find((s) => s.id === id);
     if (!found) return;
     setSelected(id);
     track.playSource({ uri: found.uri });
+    void Analytics.track('sound_started', { id });
+    startRef.current = { id, at: Date.now() };
     tap('success');
   }
 

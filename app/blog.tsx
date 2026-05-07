@@ -6,6 +6,7 @@ import { Text } from '../components/ui/Text';
 import { Card } from '../components/ui/Card';
 import { Pill } from '../components/ui/Pill';
 import { useTheme, spacing } from '../lib/theme';
+import { useScreenTracking } from '../lib/analytics';
 
 const articles = [
   { id: 'a1', title: 'Why does anxiety lie to you?', topic: 'Anxiety', read: '4 min', body: 'A primer on cognitive distortions and the simple practice of naming them out loud.' },
@@ -16,6 +17,7 @@ const articles = [
 ];
 
 export default function Blog() {
+  useScreenTracking('blog');
   const { colors } = useTheme();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>

@@ -11,11 +11,13 @@ import { useTheme, spacing, radius } from '../../lib/theme';
 import { Storage, ContactProfile } from '../../lib/storage';
 import { DataWrite } from '../../lib/data-write';
 import { tap } from '../../lib/haptics';
+import { useScreenTracking, Analytics } from '../../lib/analytics';
 
 const genders = ['Woman', 'Man', 'Non-binary', 'Genderfluid', 'Prefer not to say', 'Self-describe'];
 const ageRanges = ['Under 18', '18–24', '25–34', '35–44', '45–54', '55–64', '65+'];
 
 export default function ProfileEdit() {
+  useScreenTracking('auth/profile-edit');
   const { colors } = useTheme();
   const [c, setContact] = useState<ContactProfile>({});
   const [name, setName] = useState('');
@@ -35,6 +37,14 @@ export default function ProfileEdit() {
     if (c.gender === 'Self-describe' && selfGender.trim()) merged.gender = selfGender.trim();
     await DataWrite.setContact(merged);
     await DataWrite.setUser({ ...(await Storage.getUser()), name: name.trim() || undefined });
+    void Analytics.track('profile_updated', {
+      hasEmail: !!merged.email,
+      hasPhone: !!merged.phone,
+      hasGender: !!merged.gender,
+      hasAge: !!merged.ageRange,
+      hasCountry: !!merged.country,
+      researchConsent: !!merged.consentResearch,
+    });
     tap('success');
     router.back();
   }

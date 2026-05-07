@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useTheme, spacing, radius } from '../../lib/theme';
 import { Storage, streakFromCheckins, todayKey, MoodEntry, CheckinEntry, UserProfile } from '../../lib/storage';
+import { useScreenTracking, Analytics } from '../../lib/analytics';
 import { dailyPrompts, moodLabels } from '../../lib/data';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -21,6 +22,7 @@ function greeting(): string {
 }
 
 export default function Home() {
+  useScreenTracking('home');
   const { colors } = useTheme();
   const [user, setUser] = useState<UserProfile>({});
   const [moods, setMoods] = useState<MoodEntry[]>([]);
@@ -135,7 +137,9 @@ export default function Home() {
           <Text variant="subtitle">Quick mood</Text>
           <Text variant="caption" tone="dim" style={{ marginTop: 2 }}>One tap. We track the trend.</Text>
           <MoodPicker onPicked={async (score) => {
-            await Storage.addMood({ id: `${Date.now()}`, score: score as MoodEntry['score'], at: Date.now() });
+            const entry = { id: `${Date.now()}`, score: score as MoodEntry['score'], at: Date.now() };
+            await Storage.addMood(entry);
+            void Analytics.track('mood_logged', { score, source: 'home' });
             const m = await Storage.listMood();
             setMoods(m);
           }} lastScore={lastMood?.score} />

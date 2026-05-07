@@ -9,10 +9,12 @@ import { Card } from '../components/ui/Card';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { Storage } from '../lib/storage';
 import { DataWrite } from '../lib/data-write';
+import { useScreenTracking, Analytics } from '../lib/analytics';
 
 const goals = ['Reduce anxiety', 'Sleep better', 'Track my mood', 'Build habits', 'Process feelings', 'Find a therapist'];
 
 export default function Onboarding() {
+  useScreenTracking('onboarding');
   const { colors } = useTheme();
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
@@ -25,6 +27,7 @@ export default function Onboarding() {
   async function finish() {
     await DataWrite.setUser({ name: name.trim() || undefined, goals: chosen });
     await Storage.setOnboarded(true);
+    void Analytics.track('onboarding_completed', { hasName: !!name.trim(), goalsCount: chosen.length });
     router.replace('/(tabs)');
   }
 

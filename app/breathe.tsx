@@ -9,8 +9,10 @@ import { Card } from '../components/ui/Card';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { breathingPatterns, BreathingPattern } from '../lib/data';
 import { tap } from '../lib/haptics';
+import { useScreenTracking, Analytics } from '../lib/analytics';
 
 export default function Breathe() {
+  useScreenTracking('breathe');
   const { colors } = useTheme();
   const [selected, setSelected] = useState<BreathingPattern>(breathingPatterns[0]);
   const [running, setRunning] = useState(false);
@@ -87,12 +89,15 @@ function BreathRunner({ pattern, onExit }: { pattern: BreathingPattern; onExit: 
   const opacity = useSharedValue(0.7);
   const phaseRef = useRef(0);
   const cycleRef = useRef(1);
+  const startedAtRef = useRef(Date.now());
 
   useEffect(() => {
     phaseRef.current = 0;
     cycleRef.current = 1;
     setPhaseIdx(0);
     setCycle(1);
+    startedAtRef.current = Date.now();
+    void Analytics.track('breathing_started', { pattern: pattern.id });
     let cancelled = false;
 
     const advance = () => {
@@ -125,6 +130,8 @@ function BreathRunner({ pattern, onExit }: { pattern: BreathingPattern; onExit: 
       cancelled = true;
       cancelAnimation(scale);
       cancelAnimation(opacity);
+      const dur = Date.now() - startedAtRef.current;
+      void Analytics.track('breathing_ended', { pattern: pattern.id, cycles: cycleRef.current, durationMs: dur });
     };
   }, [pattern, scale, opacity]);
 

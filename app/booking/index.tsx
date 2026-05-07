@@ -11,8 +11,10 @@ import { useTheme, spacing } from '../../lib/theme';
 import { Storage, Booking } from '../../lib/storage';
 import { DataWrite } from '../../lib/data-write';
 import { tap } from '../../lib/haptics';
+import { useScreenTracking, Analytics } from '../../lib/analytics';
 
 export default function Bookings() {
+  useScreenTracking('bookings');
   const { colors } = useTheme();
   const [list, setList] = useState<Booking[]>([]);
 
@@ -23,7 +25,7 @@ export default function Bookings() {
   const past = list.filter((b) => b.status !== 'confirmed' || b.startsAt <= Date.now()).sort((a, b) => b.startsAt - a.startsAt);
 
   function confirmCancel(id: string, name: string) {
-    const doIt = async () => { await DataWrite.cancelBooking(id); tap('warn'); load(); };
+    const doIt = async () => { await DataWrite.cancelBooking(id); void Analytics.track('booking_cancelled', { bookingId: id }); tap('warn'); load(); };
     if (Platform.OS === 'web') {
       if (window.confirm(`Cancel session with ${name}?`)) doIt();
       return;

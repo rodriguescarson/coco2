@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/ui/Text';
 import { useTheme, spacing, radius } from '../../lib/theme';
+import { useScreenTracking } from '../../lib/analytics';
 
 const tools: { icon: keyof typeof Ionicons.glyphMap; title: string; subtitle: string; href: string; tint?: 'primary' | 'accent' | 'info' | 'warning' | 'danger' }[] = [
   { icon: 'cloud-outline', title: 'Breathing exercises', subtitle: 'Box, 4-7-8, sigh, coherent', href: '/breathe', tint: 'primary' },
@@ -18,6 +19,7 @@ const tools: { icon: keyof typeof Ionicons.glyphMap; title: string; subtitle: st
 ];
 
 export default function Tools() {
+  useScreenTracking('tools');
   const { colors } = useTheme();
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.bg }}>

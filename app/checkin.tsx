@@ -8,10 +8,12 @@ import { Button } from '../components/ui/Button';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { Storage, todayKey, streakFromCheckins, CheckinEntry } from '../lib/storage';
 import { DataWrite } from '../lib/data-write';
+import { useScreenTracking, Analytics } from '../lib/analytics';
 import { dailyPrompts } from '../lib/data';
 import { tap } from '../lib/haptics';
 
 export default function CheckIn() {
+  useScreenTracking('checkin');
   const { colors } = useTheme();
   const [feeling, setFeeling] = useState('');
   const [gratitude, setGratitude] = useState('');
@@ -40,6 +42,7 @@ export default function CheckIn() {
       at: Date.now(),
       prompts: { feeling: feeling.trim(), gratitude: gratitude.trim() || undefined },
     });
+    void Analytics.track('checkin_completed', { hasGratitude: !!gratitude.trim(), streak });
     tap('success');
     router.back();
   }

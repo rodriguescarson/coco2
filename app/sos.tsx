@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ScrollView, View, StyleSheet, Pressable, Linking, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,14 +9,21 @@ import { Card } from '../components/ui/Card';
 import { useTheme, spacing } from '../lib/theme';
 import { crisisHotlines, groundingSteps } from '../lib/data';
 import { tap } from '../lib/haptics';
+import { useScreenTracking, Analytics } from '../lib/analytics';
 
 export default function SOS() {
+  useScreenTracking('sos');
   const { colors } = useTheme();
 
-  function call(phone: string) {
+  useEffect(() => {
+    void Analytics.track('sos_opened');
+  }, []);
+
+  function call(phone: string, region?: string) {
     tap('warn');
     if (!phone) return;
     const cleaned = phone.replace(/\s/g, '');
+    void Analytics.track('hotline_called', { region: region ?? 'unknown' });
     Linking.openURL(`tel:${cleaned}`).catch(() => {});
   }
 
@@ -51,7 +59,7 @@ export default function SOS() {
               <Text variant="bodyMedium" style={{ marginTop: 4 }}>{h.name}</Text>
               <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, flexWrap: 'wrap' }}>
                 {h.phone ? (
-                  <Button label={`Call ${h.phone}`} variant="primary" icon="call" size="sm" onPress={() => call(h.phone)} />
+                  <Button label={`Call ${h.phone}`} variant="primary" icon="call" size="sm" onPress={() => call(h.phone, h.region)} />
                 ) : null}
                 {h.text ? (
                   <Button

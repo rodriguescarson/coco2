@@ -10,6 +10,8 @@ const KEYS = {
   onboarded: '@coco/onboarded',
   bookings: '@coco/bookings',
   contact: '@coco/contact',
+  analyticsEvents: '@coco/analytics-events',
+  analyticsAgg: '@coco/analytics-agg',
 } as const;
 
 export type MoodEntry = {

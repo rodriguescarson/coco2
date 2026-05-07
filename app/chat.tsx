@@ -9,6 +9,7 @@ import { Storage, UserProfile } from '../lib/storage';
 import { DataWrite } from '../lib/data-write';
 import { sendChat, detectCrisis, newId, ChatMessage } from '../lib/chat';
 import { tap } from '../lib/haptics';
+import { useScreenTracking, Analytics } from '../lib/analytics';
 
 const SUGGESTED = [
   'I can\'t sleep',
@@ -18,6 +19,7 @@ const SUGGESTED = [
 ];
 
 export default function Chat() {
+  useScreenTracking('chat');
   const { colors } = useTheme();
   const [user, setUser] = useState<UserProfile>({});
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -57,11 +59,12 @@ export default function Chat() {
       const next = [...messages, userMsg];
       setMessages(next);
       DataWrite.addChat(userMsg);
+      const clientCrisis = detectCrisis(trimmed);
+      void Analytics.track('chat_message_sent', { length: trimmed.length, crisisDetected: clientCrisis });
       setDraft('');
       setSending(true);
       tap('select');
 
-      const clientCrisis = detectCrisis(trimmed);
       try {
         const res = await sendChat({
           messages: next.map((m) => ({ role: m.role, content: m.text })),
@@ -76,6 +79,7 @@ export default function Chat() {
         };
         setMessages((m) => [...m, assistant]);
         DataWrite.addChat(assistant);
+        void Analytics.track('chat_message_received', { length: res.reply.length, crisisDetected: !!res.crisisDetected });
         tap('tap');
       } catch (e) {
         const fallback =

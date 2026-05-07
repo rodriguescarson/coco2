@@ -9,6 +9,7 @@ import { Pill } from '../components/ui/Pill';
 import { Button } from '../components/ui/Button';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { places, Place } from '../lib/data';
+import { useScreenTracking } from '../lib/analytics';
 
 const kinds: { id: Place['kind'] | 'all'; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -19,6 +20,7 @@ const kinds: { id: Place['kind'] | 'all'; label: string }[] = [
 ];
 
 export default function Places() {
+  useScreenTracking('places');
   const { colors } = useTheme();
   const [filter, setFilter] = useState<typeof kinds[number]['id']>('all');
   const [q, setQ] = useState('');

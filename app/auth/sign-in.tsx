@@ -10,8 +10,10 @@ import { Card } from '../../components/ui/Card';
 import { useTheme, spacing, radius } from '../../lib/theme';
 import { useAuth, useGoogleSignIn, signInWithApple, upgradeWithEmailPassword } from '../../lib/auth';
 import { tap } from '../../lib/haptics';
+import { useScreenTracking, Analytics } from '../../lib/analytics';
 
 export default function SignIn() {
+  useScreenTracking('auth/sign-in');
   const { colors } = useTheme();
   const { user, available } = useAuth();
   const google = useGoogleSignIn();
@@ -36,9 +38,11 @@ export default function SignIn() {
     setError(null);
     try {
       await upgradeWithEmailPassword(email.trim(), password);
+      void Analytics.track('auth_success', { provider: 'email' });
       tap('success');
       router.back();
     } catch (e) {
+      void Analytics.track('auth_failed', { provider: 'email', reason: (e as Error).message.slice(0, 80) });
       setError((e as Error).message);
       tap('warn');
     } finally {
@@ -51,8 +55,8 @@ export default function SignIn() {
     setError(null);
     const r = await google.start();
     setBusy(null);
-    if (r.ok) { tap('success'); router.back(); }
-    else { setError(r.reason); tap('warn'); }
+    if (r.ok) { void Analytics.track('auth_success', { provider: 'google' }); tap('success'); router.back(); }
+    else { void Analytics.track('auth_failed', { provider: 'google', reason: r.reason.slice(0, 80) }); setError(r.reason); tap('warn'); }
   }
 
   async function doApple() {
@@ -60,8 +64,8 @@ export default function SignIn() {
     setError(null);
     const r = await signInWithApple();
     setBusy(null);
-    if (r.ok) { tap('success'); router.back(); }
-    else { setError(r.reason); tap('warn'); }
+    if (r.ok) { void Analytics.track('auth_success', { provider: 'apple' }); tap('success'); router.back(); }
+    else { void Analytics.track('auth_failed', { provider: 'apple', reason: r.reason.slice(0, 80) }); setError(r.reason); tap('warn'); }
   }
 
   return (

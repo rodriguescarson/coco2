@@ -7,6 +7,7 @@ import { Text } from '../components/ui/Text';
 import { Card } from '../components/ui/Card';
 import { Pill } from '../components/ui/Pill';
 import { useTheme, spacing, radius } from '../lib/theme';
+import { useScreenTracking } from '../lib/analytics';
 
 type Person = {
   name: string;
@@ -75,6 +76,7 @@ const thanks: Person[] = [
 ];
 
 export default function About() {
+  useScreenTracking('about');
   const { colors } = useTheme();
 
   return (

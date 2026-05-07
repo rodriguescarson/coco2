@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,11 +8,15 @@ import { Button } from '../components/ui/Button';
 import { useTheme, spacing } from '../lib/theme';
 import { groundingSteps } from '../lib/data';
 import { tap } from '../lib/haptics';
+import { useScreenTracking, Analytics } from '../lib/analytics';
 
 export default function Grounding() {
+  useScreenTracking('grounding');
   const { colors } = useTheme();
   const [step, setStep] = useState(0);
   const total = groundingSteps.length;
+  const startedAt = useRef(Date.now());
+  useEffect(() => { void Analytics.track('grounding_started'); }, []);
 
   const current = groundingSteps[step];
   const remaining = 5 - step;
@@ -46,6 +50,7 @@ export default function Grounding() {
           onPress={() => {
             tap('select');
             if (step === total - 1) {
+              void Analytics.track('grounding_completed', { durationMs: Date.now() - startedAt.current });
               router.back();
             } else {
               setStep(step + 1);

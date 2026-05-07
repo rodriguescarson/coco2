@@ -6,8 +6,10 @@ import { Text } from '../components/ui/Text';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { useTheme, spacing } from '../lib/theme';
+import { useScreenTracking } from '../lib/analytics';
 
 export default function VoiceTherapy() {
+  useScreenTracking('voice-therapy');
   const { colors } = useTheme();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>

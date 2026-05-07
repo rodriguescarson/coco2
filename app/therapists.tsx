@@ -9,6 +9,7 @@ import { Pill } from '../components/ui/Pill';
 import { Button } from '../components/ui/Button';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { therapists, Therapist } from '../lib/data';
+import { useScreenTracking } from '../lib/analytics';
 
 const modalities: { id: Therapist['modality'] | 'all'; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -18,6 +19,7 @@ const modalities: { id: Therapist['modality'] | 'all'; label: string }[] = [
 ];
 
 export default function Therapists() {
+  useScreenTracking('therapists');
   const { colors } = useTheme();
   const [q, setQ] = useState('');
   const [modality, setModality] = useState<typeof modalities[number]['id']>('all');

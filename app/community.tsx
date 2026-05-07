@@ -6,6 +6,7 @@ import { Text } from '../components/ui/Text';
 import { Card } from '../components/ui/Card';
 import { Pill } from '../components/ui/Pill';
 import { useTheme, spacing } from '../lib/theme';
+import { useScreenTracking } from '../lib/analytics';
 
 const circles = [
   { id: 'c1', name: 'Late-night anxiety', members: 412, topic: 'Anxiety', live: true },
@@ -17,6 +18,7 @@ const circles = [
 ];
 
 export default function Community() {
+  useScreenTracking('community');
   const { colors } = useTheme();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>

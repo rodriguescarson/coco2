@@ -12,6 +12,7 @@ import { therapists } from '../../lib/data';
 import type { Booking } from '../../lib/storage';
 import { DataWrite } from '../../lib/data-write';
 import { tap } from '../../lib/haptics';
+import { useScreenTracking, Analytics } from '../../lib/analytics';
 
 const SLOT_HOURS = [9, 10, 11, 12, 14, 15, 16, 17, 18];
 
@@ -34,6 +35,7 @@ function slotKey(d: Date, hour: number): number {
 }
 
 export default function Booking() {
+  useScreenTracking('booking/[therapistId]');
   const { colors } = useTheme();
   const { therapistId } = useLocalSearchParams<{ therapistId: string }>();
   const therapist = useMemo(() => therapists.find((t) => t.id === therapistId), [therapistId]);
@@ -71,6 +73,7 @@ export default function Booking() {
       createdAt: Date.now(),
     };
     await DataWrite.addBooking(booking);
+    void Analytics.track('booking_created', { therapistId: therapist.id, modality: booking.modality });
     tap('success');
     setBusy(false);
     if (Platform.OS === 'web') {

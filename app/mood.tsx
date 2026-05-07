@@ -10,12 +10,14 @@ import { Pill } from '../components/ui/Pill';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { Storage, MoodEntry, todayKey } from '../lib/storage';
 import { DataWrite } from '../lib/data-write';
+import { useScreenTracking, Analytics } from '../lib/analytics';
 import { moodLabels } from '../lib/data';
 import { tap } from '../lib/haptics';
 
 const TAGS = ['Work', 'Sleep', 'Family', 'Money', 'Friends', 'Body', 'Loneliness', 'Hopeful', 'Tired', 'Anxious', 'Calm', 'Angry'];
 
 export default function Mood() {
+  useScreenTracking('mood');
   const { colors } = useTheme();
   const [score, setScore] = useState<MoodEntry['score']>(3);
   const [tags, setTags] = useState<string[]>([]);
@@ -29,6 +31,7 @@ export default function Mood() {
   async function save() {
     const entry: MoodEntry = { id: `${Date.now()}`, score, tags, note: note.trim() || undefined, at: Date.now() };
     await DataWrite.addMood(entry);
+    void Analytics.track('mood_logged', { score, hasNote: !!note.trim(), tagCount: tags.length, source: 'mood-screen' });
     tap('success');
     setScore(3);
     setTags([]);

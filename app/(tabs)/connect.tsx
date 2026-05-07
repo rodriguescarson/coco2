@@ -5,9 +5,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/ui/Text';
 import { Card } from '../../components/ui/Card';
 import { useTheme, spacing } from '../../lib/theme';
+import { useScreenTracking } from '../../lib/analytics';
 import { therapists, places } from '../../lib/data';
 
 export default function Connect() {
+  useScreenTracking('connect');
   const { colors } = useTheme();
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: colors.bg }}>

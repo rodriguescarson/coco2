@@ -8,8 +8,10 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useTheme, spacing } from '../../lib/theme';
 import { Storage, JournalEntry } from '../../lib/storage';
+import { useScreenTracking, Analytics } from '../../lib/analytics';
 
 export default function JournalList() {
+  useScreenTracking('journal');
   const { colors } = useTheme();
   const [items, setItems] = useState<JournalEntry[]>([]);
 
@@ -48,6 +50,7 @@ export default function JournalList() {
                 <Pressable
                   onPress={async () => {
                     await Storage.deleteJournal(j.id);
+                    void Analytics.track('journal_deleted', { id: j.id });
                     load();
                   }}
                   hitSlop={8}

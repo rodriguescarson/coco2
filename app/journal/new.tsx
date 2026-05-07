@@ -7,10 +7,12 @@ import { Text } from '../../components/ui/Text';
 import { Button } from '../../components/ui/Button';
 import { useTheme, spacing, radius } from '../../lib/theme';
 import { DataWrite } from '../../lib/data-write';
+import { useScreenTracking, Analytics } from '../../lib/analytics';
 import { journalPrompts } from '../../lib/data';
 import { tap } from '../../lib/haptics';
 
 export default function NewEntry() {
+  useScreenTracking('journal/new');
   const { colors } = useTheme();
   const { prompt: promptParam } = useLocalSearchParams<{ prompt?: string }>();
   const [prompt, setPrompt] = useState<string>(promptParam || journalPrompts[Math.floor(Math.random() * journalPrompts.length)]);
@@ -30,6 +32,7 @@ export default function NewEntry() {
       body: body.trim(),
       at: Date.now(),
     });
+    void Analytics.track('journal_created', { hasTitle: !!title.trim(), hasPrompt: !!prompt, bodyLength: body.trim().length });
     tap('success');
     router.back();
   }
