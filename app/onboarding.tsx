@@ -8,6 +8,7 @@ import { Pill } from '../components/ui/Pill';
 import { Card } from '../components/ui/Card';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { Storage } from '../lib/storage';
+import { DataWrite } from '../lib/data-write';
 
 const goals = ['Reduce anxiety', 'Sleep better', 'Track my mood', 'Build habits', 'Process feelings', 'Find a therapist'];
 
@@ -22,7 +23,7 @@ export default function Onboarding() {
   }
 
   async function finish() {
-    await Storage.setUser({ name: name.trim() || undefined, goals: chosen });
+    await DataWrite.setUser({ name: name.trim() || undefined, goals: chosen });
     await Storage.setOnboarded(true);
     router.replace('/(tabs)');
   }

@@ -8,6 +8,8 @@ const KEYS = {
   chat: '@coco/chat-history',
   prefs: '@coco/prefs',
   onboarded: '@coco/onboarded',
+  bookings: '@coco/bookings',
+  contact: '@coco/contact',
 } as const;
 
 export type MoodEntry = {
@@ -36,6 +38,26 @@ export type UserProfile = {
   name?: string;
   pronouns?: string;
   goals?: string[];
+};
+
+export type ContactProfile = {
+  email?: string;
+  phone?: string;
+  gender?: string;
+  ageRange?: string;
+  country?: string;
+  consentResearch?: boolean;
+};
+
+export type Booking = {
+  id: string;
+  therapistId: string;
+  therapistName: string;
+  startsAt: number;
+  modality: 'video' | 'in-person' | 'both';
+  notes?: string;
+  status: 'confirmed' | 'cancelled';
+  createdAt: number;
 };
 
 export type Prefs = {
@@ -122,6 +144,36 @@ export const Storage = {
 
   async clearAll() {
     await AsyncStorage.multiRemove(Object.values(KEYS));
+  },
+
+  async replaceMood(list: MoodEntry[]) {
+    await writeJson(KEYS.mood, list);
+  },
+  async replaceJournal(list: JournalEntry[]) {
+    await writeJson(KEYS.journal, list);
+  },
+  async replaceCheckin(list: CheckinEntry[]) {
+    await writeJson(KEYS.checkin, list);
+  },
+
+  async listBookings(): Promise<Booking[]> {
+    return readJson(KEYS.bookings, []);
+  },
+  async addBooking(b: Booking) {
+    const list = await Storage.listBookings();
+    list.unshift(b);
+    await writeJson(KEYS.bookings, list);
+  },
+  async cancelBooking(id: string) {
+    const list = (await Storage.listBookings()).map((b) => (b.id === id ? { ...b, status: 'cancelled' as const } : b));
+    await writeJson(KEYS.bookings, list);
+  },
+
+  async getContact(): Promise<ContactProfile> {
+    return readJson(KEYS.contact, {});
+  },
+  async setContact(c: ContactProfile) {
+    return writeJson(KEYS.contact, c);
   },
 };
 

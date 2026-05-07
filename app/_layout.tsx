@@ -6,6 +6,7 @@ import * as SystemUI from 'expo-system-ui';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { getColors } from '../lib/theme';
+import { AuthBootstrap } from '../components/AuthBootstrap';
 
 export default function RootLayout() {
   const scheme = (useColorScheme() ?? 'light') as 'light' | 'dark';
@@ -19,6 +20,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+        <AuthBootstrap>
         <Stack
           screenOptions={{
             headerShown: false,
@@ -41,7 +43,13 @@ export default function RootLayout() {
           <Stack.Screen name="therapists" />
           <Stack.Screen name="voice-therapy" />
           <Stack.Screen name="grounding" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="about" />
+          <Stack.Screen name="auth/sign-in" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="auth/profile-edit" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="booking/[therapistId]" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="booking/index" />
         </Stack>
+        </AuthBootstrap>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

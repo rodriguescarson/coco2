@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ScrollView, View, StyleSheet, Pressable, TextInput, Alert, Platform } from 'react-native';
+import { ScrollView, View, StyleSheet, Pressable, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -35,12 +35,8 @@ export default function Therapists() {
     });
   }, [q, modality]);
 
-  function bookingComing() {
-    if (Platform.OS === 'web') {
-      window.alert('Live booking ships in the next build. For now, browse and check the websites linked in Places.');
-      return;
-    }
-    Alert.alert('Coming soon', 'Live booking ships in the next build. For now you can browse profiles.');
+  function book(id: string) {
+    router.push(`/booking/${id}`);
   }
 
   return (
@@ -101,7 +97,7 @@ export default function Therapists() {
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.md }}>
                 <Text variant="caption" tone="dim">{t.city} · {t.rate}</Text>
-                <Button label="Book" size="sm" icon="calendar-outline" onPress={bookingComing} />
+                <Button label="Book" size="sm" icon="calendar-outline" onPress={() => book(t.id)} />
               </View>
             </Card>
           ))}
@@ -109,7 +105,7 @@ export default function Therapists() {
 
         <Card tone="muted" style={{ marginTop: spacing.xl }}>
           <Text variant="caption" tone="dim">
-            This list is illustrative — Coco partners with verified providers in the production rollout. For now, also check the regional clinics in Places.
+            Booking holds a slot and pings the therapist by email. They confirm within 24 hours. Cancel free up to 12 hours before your session from Profile → My bookings.
           </Text>
         </Card>
       </ScrollView>

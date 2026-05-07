@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../../components/ui/Text';
 import { Button } from '../../components/ui/Button';
 import { useTheme, spacing, radius } from '../../lib/theme';
-import { Storage } from '../../lib/storage';
+import { DataWrite } from '../../lib/data-write';
 import { journalPrompts } from '../../lib/data';
 import { tap } from '../../lib/haptics';
 
@@ -23,7 +23,7 @@ export default function NewEntry() {
 
   async function save() {
     if (!body.trim()) return;
-    await Storage.addJournal({
+    await DataWrite.addJournal({
       id: `${Date.now()}`,
       title: title.trim() || undefined,
       prompt,

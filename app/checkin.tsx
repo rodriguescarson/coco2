@@ -7,6 +7,7 @@ import { Text } from '../components/ui/Text';
 import { Button } from '../components/ui/Button';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { Storage, todayKey, streakFromCheckins, CheckinEntry } from '../lib/storage';
+import { DataWrite } from '../lib/data-write';
 import { dailyPrompts } from '../lib/data';
 import { tap } from '../lib/haptics';
 
@@ -34,7 +35,7 @@ export default function CheckIn() {
 
   async function save() {
     if (!feeling.trim()) return;
-    await Storage.addCheckin({
+    await DataWrite.addCheckin({
       date: todayKey(),
       at: Date.now(),
       prompts: { feeling: feeling.trim(), gratitude: gratitude.trim() || undefined },

@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../components/ui/Text';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { Storage, UserProfile } from '../lib/storage';
+import { DataWrite } from '../lib/data-write';
 import { sendChat, detectCrisis, newId, ChatMessage } from '../lib/chat';
 import { tap } from '../lib/haptics';
 
@@ -55,6 +56,7 @@ export default function Chat() {
       const userMsg: ChatMessage = { id: newId(), role: 'user', text: trimmed, at: Date.now() };
       const next = [...messages, userMsg];
       setMessages(next);
+      DataWrite.addChat(userMsg);
       setDraft('');
       setSending(true);
       tap('select');
@@ -73,6 +75,7 @@ export default function Chat() {
           meta: { crisisDetected: !!res.crisisDetected || clientCrisis },
         };
         setMessages((m) => [...m, assistant]);
+        DataWrite.addChat(assistant);
         tap('tap');
       } catch (e) {
         const fallback =

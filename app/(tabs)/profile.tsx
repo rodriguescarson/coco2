@@ -7,9 +7,11 @@ import { Text } from '../../components/ui/Text';
 import { Card } from '../../components/ui/Card';
 import { useTheme, spacing, radius } from '../../lib/theme';
 import { Storage, streakFromCheckins, UserProfile, Prefs } from '../../lib/storage';
+import { useAuth, signOut } from '../../lib/auth';
 
 export default function Profile() {
   const { colors } = useTheme();
+  const auth = useAuth();
   const [user, setUser] = useState<UserProfile>({});
   const [prefs, setPrefs] = useState<Prefs>({ hapticsOn: true, reminders: true });
   const [stats, setStats] = useState({ moods: 0, journals: 0, streak: 0 });
@@ -65,6 +67,60 @@ export default function Profile() {
           <Stat label="Entries" value={stats.journals} colors={colors} />
         </View>
 
+        <Section title="Account">
+          {auth.available ? (
+            auth.user && !auth.user.isAnonymous ? (
+              <Card>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={[styles.iconRound, { backgroundColor: colors.primarySoft }]}>
+                    <Ionicons name="cloud-done-outline" size={20} color={colors.primary} />
+                  </View>
+                  <View style={{ flex: 1, marginLeft: spacing.md }}>
+                    <Text variant="bodyMedium">Synced</Text>
+                    <Text variant="caption" tone="dim">{auth.user.email ?? auth.user.uid.slice(0, 10)}</Text>
+                  </View>
+                  <Pressable onPress={() => signOut()} hitSlop={8} accessibilityLabel="Sign out">
+                    <Text variant="caption" tone="primary" style={{ fontWeight: '600' }}>Sign out</Text>
+                  </Pressable>
+                </View>
+              </Card>
+            ) : (
+              <Card tone="primary" onPress={() => router.push('/auth/sign-in')} accessibilityLabel="Sign in to sync">
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={[styles.iconRound, { backgroundColor: colors.surface }]}>
+                    <Ionicons name="cloud-upload-outline" size={20} color={colors.primary} />
+                  </View>
+                  <View style={{ flex: 1, marginLeft: spacing.md }}>
+                    <Text variant="bodyMedium" tone="primary">Sign in to sync across devices</Text>
+                    <Text variant="caption" tone="primary" style={{ opacity: 0.85 }}>Google · Apple · Email · keep your streak</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={colors.primary} />
+                </View>
+              </Card>
+            )
+          ) : (
+            <Card tone="muted">
+              <Text variant="bodyMedium">Local only</Text>
+              <Text variant="caption" tone="dim">Add the Firebase web app id in app.json to enable sync.</Text>
+            </Card>
+          )}
+        </Section>
+
+        <Section title="My bookings">
+          <Card onPress={() => router.push('/booking')} accessibilityLabel="View bookings">
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={[styles.iconRound, { backgroundColor: colors.accentSoft }]}>
+                <Ionicons name="calendar-outline" size={20} color={colors.accent} />
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text variant="bodyMedium">Therapy bookings</Text>
+                <Text variant="caption" tone="dim">View, reschedule, or cancel</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+            </View>
+          </Card>
+        </Section>
+
         <Section title="Preferences">
           <Card style={{ padding: 0 }}>
             <Toggle
@@ -88,8 +144,28 @@ export default function Profile() {
         </Section>
 
         <Section title="Profile">
-          <Card onPress={() => router.push('/onboarding')} accessibilityLabel="Edit profile">
-            <Row label="Name & goals" hint={user.name ?? 'Not set'} colors={colors} />
+          <View style={{ gap: spacing.md }}>
+            <Card onPress={() => router.push('/auth/profile-edit')} accessibilityLabel="Edit profile details">
+              <Row label="Name, email, phone, gender" hint={user.name ?? 'Tap to add'} colors={colors} />
+            </Card>
+            <Card onPress={() => router.push('/onboarding')} accessibilityLabel="Edit goals">
+              <Row label="Your goals" hint={(user.goals ?? []).slice(0, 2).join(' · ') || 'Not set'} colors={colors} />
+            </Card>
+          </View>
+        </Section>
+
+        <Section title="About">
+          <Card onPress={() => router.push('/about')} accessibilityLabel="About Coco">
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={[styles.iconRound, { backgroundColor: colors.primarySoft }]}>
+                <Ionicons name="ribbon-outline" size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text variant="bodyMedium">Where Coco started</Text>
+                <Text variant="caption" tone="dim">SIH 2022 · Green Ribbon Army · Credits</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+            </View>
           </Card>
         </Section>
 
@@ -191,5 +267,12 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: radius.lg,
     borderWidth: 1,
+  },
+  iconRound: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button';
 import { Pill } from '../components/ui/Pill';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { Storage, MoodEntry, todayKey } from '../lib/storage';
+import { DataWrite } from '../lib/data-write';
 import { moodLabels } from '../lib/data';
 import { tap } from '../lib/haptics';
 
@@ -27,7 +28,7 @@ export default function Mood() {
 
   async function save() {
     const entry: MoodEntry = { id: `${Date.now()}`, score, tags, note: note.trim() || undefined, at: Date.now() };
-    await Storage.addMood(entry);
+    await DataWrite.addMood(entry);
     tap('success');
     setScore(3);
     setTags([]);
