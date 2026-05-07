@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="500" viewBox="0 0 1024 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1AA371"/>
+      <stop offset="60%" stop-color="#0E8A5F"/>
+      <stop offset="100%" stop-color="#06593E"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="22%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="leaf" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#FFFCF4"/>
+      <stop offset="100%" stop-color="#E8DDC4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="500" fill="url(#bg)"/>
+  <rect width="1024" height="500" fill="url(#glow)"/>
+
+  <!-- Soft background leaves -->
+  <g opacity="0.07" fill="#FBF7EE">
+    <g transform="translate(900 80) rotate(35) scale(0.45)">
+      <path d="M 0 -360 C 70 -354 240 -250 290 -90 C 320 80 220 280 0 360 C -220 280 -320 80 -290 -90 C -240 -250 -70 -354 0 -360 Z"/>
+    </g>
+    <g transform="translate(960 420) rotate(-20) scale(0.35)">
+      <path d="M 0 -360 C 70 -354 240 -250 290 -90 C 320 80 220 280 0 360 C -220 280 -320 80 -290 -90 C -240 -250 -70 -354 0 -360 Z"/>
+    </g>
+  </g>
+
+  <!-- Hero leaf -->
+  <g transform="translate(170 250) rotate(-10) scale(0.5)">
+    <path d="
+      M 0 -360
+      C 70 -354 240 -250 290 -90
+      C 320 80 220 280 0 360
+      C -220 280 -320 80 -290 -90
+      C -240 -250 -70 -354 0 -360
+      Z
+    " fill="url(#leaf)"/>
+    <path d="M 0 -360 C 14 -180 14 180 0 360" stroke="#0B6F4D" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.16"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g transform="translate(380 220)">
+    <text font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="118" font-weight="800" fill="#FBF7EE" letter-spacing="-3">Coco</text>
+    <text y="80" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="32" font-weight="500" fill="#FBF7EE" opacity="0.8" letter-spacing="0.5">A quiet companion for your mind.</text>
+  </g>
+</svg>
