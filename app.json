@@ -54,12 +54,13 @@
     "extra": {
       "apiBaseUrl": "https://coco-api-nine.vercel.app",
       "firebase": {
-        "apiKey": "AIzaSyCKp5BxNVcuKgfKhJj9QS9P5RXiWPsi51o",
+        "apiKey": "AIzaSyBM4cN4aGimCCRrDosTpdJykQohOJKXmVA",
         "authDomain": "coco-sih.firebaseapp.com",
         "projectId": "coco-sih",
         "storageBucket": "coco-sih.appspot.com",
         "messagingSenderId": "522896815441",
-        "appId": "1:522896815441:web:REPLACE_WITH_WEB_APP_ID"
+        "appId": "1:522896815441:web:6e29e18ad700b390a8cf70",
+        "measurementId": "G-PZMPYC9YTE"
       },
       "googleClientIdWeb": "522896815441-s2bvu8ng4kc4qvpulrcu7au1bia33d2e.apps.googleusercontent.com"
     }
