@@ -8,24 +8,68 @@ import { Card } from '../components/ui/Card';
 import { Pill } from '../components/ui/Pill';
 import { useTheme, spacing, radius } from '../lib/theme';
 
-const team = [
-  { name: 'Carson Rodrigues', role: 'Builder' },
-  { name: 'OYSTURN Vas', role: 'Builder' },
-  { name: "Rea D'Souza", role: 'Builder' },
-  { name: 'Druvi Tendulkar', role: 'Builder' },
-  { name: 'Yash Karapurkar', role: 'Builder' },
-  { name: 'Jaysel Silveira', role: 'Builder' },
+type Person = {
+  name: string;
+  role: string;
+  links?: { linkedin?: string; website?: string };
+};
+
+const team: Person[] = [
+  {
+    name: 'Carson Rodrigues',
+    role: 'Builder',
+    links: {
+      linkedin: 'https://www.linkedin.com/in/rodriguescarson/',
+      website: 'https://carsonrodrigues.com',
+    },
+  },
+  {
+    name: 'OYSTURN Vas',
+    role: 'Builder',
+    links: {
+      linkedin: 'https://www.linkedin.com/in/oysturn-vas/',
+      website: 'https://www.oysturnxvas.com/',
+    },
+  },
+  {
+    name: "Rea D'Souza",
+    role: 'Builder',
+    links: { linkedin: 'https://www.linkedin.com/in/rea-d-souza' },
+  },
+  {
+    name: 'Druvi Tendulkar',
+    role: 'Builder',
+    links: { linkedin: 'https://www.linkedin.com/in/druvi-tendulkar-917849190' },
+  },
+  {
+    name: 'Yash Karapurkar',
+    role: 'Builder',
+    links: { linkedin: 'https://www.linkedin.com/in/yash-karapurkar' },
+  },
+  {
+    name: 'Jaysel Silveira',
+    role: 'Builder',
+    links: { linkedin: 'https://www.linkedin.com/in/jaysel-theresa-silveira-b7416b190' },
+  },
 ];
 
-const mentors = [
+const mentors: Person[] = [
   { name: 'Dr. Vivek Jog', role: 'Mentor' },
   { name: 'Prof. Amey Kerkar', role: 'Mentor' },
 ];
 
-const thanks = [
+const thanks: Person[] = [
   { name: 'Fr. Kinley D’Cruz', role: 'Director, Don Bosco College of Engineering' },
-  { name: 'Dr. Neena Panandikar', role: 'Principal' },
-  { name: 'Dr. Gaurang S. Patkar', role: 'Head of Department' },
+  {
+    name: 'Dr. Neena Panandikar',
+    role: 'Principal',
+    links: { linkedin: 'https://www.linkedin.com/in/dr-neena-panandikar-836145147' },
+  },
+  {
+    name: 'Dr. Gaurang S. Patkar',
+    role: 'Head of Department',
+    links: { linkedin: 'https://www.linkedin.com/in/dr-gaurang-s-patkar-a8bb63126' },
+  },
   { name: 'Mayalin Noronha', role: 'Counsellor — clinical guidance' },
   { name: 'Stella Tom', role: 'SIH coaching' },
 ];
@@ -64,7 +108,7 @@ export default function About() {
           </Text>
           <View style={{ gap: spacing.sm }}>
             {team.map((m) => (
-              <PersonRow key={m.name} name={m.name} role={m.role} colors={colors} />
+              <PersonRow key={m.name} person={m} colors={colors} />
             ))}
           </View>
         </View>
@@ -76,7 +120,7 @@ export default function About() {
           </Text>
           <View style={{ gap: spacing.sm }}>
             {mentors.map((m) => (
-              <PersonRow key={m.name} name={m.name} role={m.role} colors={colors} accent />
+              <PersonRow key={m.name} person={m} colors={colors} accent />
             ))}
           </View>
         </View>
@@ -89,9 +133,12 @@ export default function About() {
           <Card style={{ padding: 0 }}>
             {thanks.map((t, i) => (
               <View key={t.name}>
-                <View style={{ padding: spacing.lg }}>
-                  <Text variant="bodyMedium">{t.name}</Text>
-                  <Text variant="caption" tone="dim">{t.role}</Text>
+                <View style={{ padding: spacing.lg, flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{ flex: 1 }}>
+                    <Text variant="bodyMedium">{t.name}</Text>
+                    <Text variant="caption" tone="dim">{t.role}</Text>
+                  </View>
+                  <PersonLinks links={t.links} colors={colors} />
                 </View>
                 {i < thanks.length - 1 ? <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border }} /> : null}
               </View>
@@ -190,8 +237,8 @@ function PhotoCard({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }
   );
 }
 
-function PersonRow({ name, role, colors, accent }: { name: string; role: string; colors: ReturnType<typeof useTheme>['colors']; accent?: boolean }) {
-  const initial = name
+function PersonRow({ person, colors, accent }: { person: Person; colors: ReturnType<typeof useTheme>['colors']; accent?: boolean }) {
+  const initial = person.name
     .replace(/^(Dr\.|Prof\.|Fr\.)\s*/i, '')
     .split(' ')
     .filter(Boolean)
@@ -205,9 +252,46 @@ function PersonRow({ name, role, colors, accent }: { name: string; role: string;
         <Text variant="bodyMedium" style={{ color: accent ? colors.accent : colors.primary, fontWeight: '700' }}>{initial}</Text>
       </View>
       <View style={{ flex: 1, marginLeft: spacing.md }}>
-        <Text variant="bodyMedium">{name}</Text>
-        <Text variant="caption" tone="dim">{role}</Text>
+        <Text variant="bodyMedium">{person.name}</Text>
+        <Text variant="caption" tone="dim">{person.role}</Text>
       </View>
+      <PersonLinks links={person.links} colors={colors} />
+    </View>
+  );
+}
+
+function PersonLinks({ links, colors }: { links?: Person['links']; colors: ReturnType<typeof useTheme>['colors'] }) {
+  if (!links || (!links.linkedin && !links.website)) return null;
+  return (
+    <View style={{ flexDirection: 'row', gap: 6, marginLeft: spacing.sm }}>
+      {links.linkedin ? (
+        <Pressable
+          onPress={() => Linking.openURL(links.linkedin!).catch(() => {})}
+          accessibilityRole="link"
+          accessibilityLabel="Open LinkedIn profile"
+          hitSlop={6}
+          style={({ pressed }) => [
+            styles.linkChip,
+            { backgroundColor: colors.surfaceMuted, borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+          ]}
+        >
+          <Ionicons name="logo-linkedin" size={16} color={colors.info} />
+        </Pressable>
+      ) : null}
+      {links.website ? (
+        <Pressable
+          onPress={() => Linking.openURL(links.website!).catch(() => {})}
+          accessibilityRole="link"
+          accessibilityLabel="Open personal website"
+          hitSlop={6}
+          style={({ pressed }) => [
+            styles.linkChip,
+            { backgroundColor: colors.surfaceMuted, borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+          ]}
+        >
+          <Ionicons name="globe-outline" size={16} color={colors.primary} />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -289,6 +373,14 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
   },
   avatar: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  linkChip: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+  },
   linkBtn: {
     flexDirection: 'row',
     alignItems: 'center',
