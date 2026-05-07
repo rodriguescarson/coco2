@@ -51,7 +51,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "apiBaseUrl": "https://coco-api.vercel.app"
+      "apiBaseUrl": "https://coco-api-nine.vercel.app"
     }
   }
 }
