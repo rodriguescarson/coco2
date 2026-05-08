@@ -44,13 +44,23 @@ Authoritative state of identifiers and what's wired vs. still manual.
 
 ### 1. Apple Developer Console (paid Apple Developer account needed)
 
-For Apple Sign-In to actually work end-to-end on a real device:
+Apple Team ID: `AT45DRFG4P` (already wired in `app.json` → `ios.appleTeamId`).
 
-1. https://developer.apple.com/account/resources/identifiers
-2. **+ App ID** → Type: App → continue
-3. Description: "Coco"
-4. Bundle ID: explicit, `com.rodriguescarson.coco`
-5. **Capabilities** → tick **Sign In with Apple** → Continue → Register
+For Apple Sign-In to work end-to-end on a real device, the App ID
+`com.rodriguescarson.coco` needs the **Sign In with Apple**
+capability turned on.
+
+> ⚠️ The App ID `com.rodriguescarson.coco` already exists on this
+> account from a previous Coco submission. **Do not try to recreate
+> it** — Apple will refuse with "The App ID 'AT45DRFG4P.com.rodriguescarson.coco'
+> appears to be in use by the App Store, so it can not be removed".
+> Edit the existing one instead.
+
+1. https://developer.apple.com/account/resources/identifiers/list
+2. Filter dropdown → **App IDs**
+3. Find `com.rodriguescarson.coco` and click it (or use the deep
+   link `https://developer.apple.com/account/resources/identifiers/bundleId/edit?bundleId=com.rodriguescarson.coco`)
+4. In Capabilities, tick **Sign In with Apple** → **Save**
 
 Optional but recommended for a polished setup:
 
