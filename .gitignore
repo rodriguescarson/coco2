@@ -41,6 +41,8 @@ android-service-account.json
 *.p8
 *.p12
 *.keystore
+credentials.json
+credentials/
 
 # Firebase per-platform config (regenerate via `firebase apps:sdkconfig`)
 GoogleService-Info.plist
