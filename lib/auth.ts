@@ -109,24 +109,47 @@ export async function upgradeWithEmailPassword(email: string, password: string):
 
 // Google sign-in via expo-auth-session.
 // Caller should use useGoogleSignIn() inside a component for the request/promptAsync hooks.
+//
+// Important: Google Sign-In is NOT supported inside Expo Go anymore. Google
+// killed the auth.expo.io proxy redirect in 2024 and now requires a redirect
+// URI bound to your real bundle id. Expo Go's bundle id is host.exp.Exponent,
+// which Google rejects with "Access blocked: Authorization Error". Use a dev
+// build (npx expo prebuild + eas build --profile development) to enable it.
+//
+// We use useIdTokenAuthRequest so Firebase gets a real id_token directly
+// (rather than an auth code that needs server-side exchange).
 export function useGoogleSignIn() {
-  const clientId = (Constants.expoConfig?.extra as { googleClientIdWeb?: string } | undefined)?.googleClientIdWeb;
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId,
-    iosClientId: clientId,
-    androidClientId: clientId,
-    webClientId: clientId,
+  const extra = (Constants.expoConfig?.extra ?? {}) as {
+    googleClientIdWeb?: string;
+    googleClientIdIos?: string;
+    googleClientIdAndroid?: string;
+  };
+
+  const [request, _response, promptAsync] = Google.useIdTokenAuthRequest({
+    clientId: extra.googleClientIdWeb,
+    iosClientId: extra.googleClientIdIos,
+    androidClientId: extra.googleClientIdAndroid,
+    webClientId: extra.googleClientIdWeb,
   });
 
   async function start(): Promise<{ ok: true } | { ok: false; reason: string }> {
+    if (isExpoGo) {
+      return {
+        ok: false,
+        reason:
+          "Google Sign-In can't run inside Expo Go anymore — Google blocks the auth.expo.io proxy. Run a development build to enable it, or use email/password here.",
+      };
+    }
     const fb = ensureFirebase();
     if (!fb) return { ok: false, reason: 'Firebase not configured' };
-    if (!clientId) return { ok: false, reason: 'Google client id not configured' };
+    if (!extra.googleClientIdWeb && !extra.googleClientIdIos && !extra.googleClientIdAndroid) {
+      return { ok: false, reason: 'Google client id not configured in app.json extra' };
+    }
     if (!request) return { ok: false, reason: 'Google sign-in not ready yet' };
     const r = await promptAsync();
     if (r?.type !== 'success') return { ok: false, reason: r?.type ?? 'cancelled' };
-    const idToken = r.authentication?.idToken;
-    if (!idToken) return { ok: false, reason: 'No id token returned' };
+    const idToken = (r.params as { id_token?: string } | undefined)?.id_token;
+    if (!idToken) return { ok: false, reason: 'No id_token returned by Google' };
     const credential = GoogleAuthProvider.credential(idToken);
     const current = fb.auth.currentUser;
     if (current && current.isAnonymous) {
@@ -137,7 +160,7 @@ export function useGoogleSignIn() {
     return { ok: true };
   }
 
-  return { start, ready: !!request, response };
+  return { start, ready: !!request };
 }
 
 // Apple sign-in (iOS native; requires a development build, not Expo Go).

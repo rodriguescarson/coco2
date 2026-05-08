@@ -102,15 +102,29 @@ export default function SignIn() {
             ) : null}
 
             <View style={{ gap: spacing.md, marginTop: spacing.xl }}>
-              <Button
-                label="Continue with Google"
-                icon="logo-google"
-                variant="secondary"
-                size="lg"
-                fullWidth
-                loading={busy === 'google'}
-                onPress={doGoogle}
-              />
+              {isExpoGo ? (
+                <Card tone="muted" style={{ paddingVertical: 14, alignItems: 'center' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Ionicons name="logo-google" size={18} color={colors.textDim} />
+                    <Text variant="caption" tone="dim" style={{ fontWeight: '600' }}>
+                      Google Sign-In needs a dev build
+                    </Text>
+                  </View>
+                  <Text variant="caption" tone="dim" style={{ marginTop: 4, textAlign: 'center' }}>
+                    Google blocks Expo's proxy redirect URL since 2024. Use email below for now, or run a development build.
+                  </Text>
+                </Card>
+              ) : (
+                <Button
+                  label="Continue with Google"
+                  icon="logo-google"
+                  variant="secondary"
+                  size="lg"
+                  fullWidth
+                  loading={busy === 'google'}
+                  onPress={doGoogle}
+                />
+              )}
               {Platform.OS === 'ios' ? (
                 isExpoGo ? (
                   <Card tone="muted" style={{ paddingVertical: 14, alignItems: 'center' }}>

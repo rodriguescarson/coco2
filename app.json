@@ -91,7 +91,9 @@
         "appId": "1:522896815441:web:6e29e18ad700b390a8cf70",
         "measurementId": "G-PZMPYC9YTE"
       },
-      "googleClientIdWeb": "522896815441-s2bvu8ng4kc4qvpulrcu7au1bia33d2e.apps.googleusercontent.com"
+      "googleClientIdWeb": "522896815441-s2bvu8ng4kc4qvpulrcu7au1bia33d2e.apps.googleusercontent.com",
+      "googleClientIdIos": "REPLACE_WITH_IOS_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+      "googleClientIdAndroid": "REPLACE_WITH_ANDROID_OAUTH_CLIENT_ID.apps.googleusercontent.com"
     }
   }
 }
