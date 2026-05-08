@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ScrollView, View, StyleSheet, Pressable, TextInput, Alert, Platform } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ScrollView, View, StyleSheet, Pressable, TextInput, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,11 +23,17 @@ export default function SignIn() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<{ provider: string; identity: string } | null>(null);
 
-  function notify(msg: string) {
-    if (Platform.OS === 'web') window.alert(msg);
-    else Alert.alert('Coco', msg);
-  }
+  // Auto-close after a successful sign-in so the user lands back on Profile
+  // and sees the synced banner. Gives a beat to read the confirmation.
+  useEffect(() => {
+    if (!success) return;
+    const t = setTimeout(() => {
+      router.back();
+    }, 1600);
+    return () => clearTimeout(t);
+  }, [success]);
 
   async function doEmail() {
     if (!email.trim() || password.length < 6) {
@@ -40,10 +46,10 @@ export default function SignIn() {
       await upgradeWithEmailPassword(email.trim(), password);
       void Analytics.track('auth_success', { provider: 'email' });
       tap('success');
-      router.back();
+      setSuccess({ provider: 'email', identity: email.trim() });
     } catch (e) {
       void Analytics.track('auth_failed', { provider: 'email', reason: (e as Error).message.slice(0, 80) });
-      setError((e as Error).message);
+      setError(friendlyAuthError((e as Error).message));
       tap('warn');
     } finally {
       setBusy(null);
@@ -55,8 +61,15 @@ export default function SignIn() {
     setError(null);
     const r = await google.start();
     setBusy(null);
-    if (r.ok) { void Analytics.track('auth_success', { provider: 'google' }); tap('success'); router.back(); }
-    else { void Analytics.track('auth_failed', { provider: 'google', reason: r.reason.slice(0, 80) }); setError(r.reason); tap('warn'); }
+    if (r.ok) {
+      void Analytics.track('auth_success', { provider: 'google' });
+      tap('success');
+      setSuccess({ provider: 'google', identity: 'Google account' });
+    } else {
+      void Analytics.track('auth_failed', { provider: 'google', reason: r.reason.slice(0, 80) });
+      setError(r.reason);
+      tap('warn');
+    }
   }
 
   async function doApple() {
@@ -64,8 +77,49 @@ export default function SignIn() {
     setError(null);
     const r = await signInWithApple();
     setBusy(null);
-    if (r.ok) { void Analytics.track('auth_success', { provider: 'apple' }); tap('success'); router.back(); }
-    else { void Analytics.track('auth_failed', { provider: 'apple', reason: r.reason.slice(0, 80) }); setError(r.reason); tap('warn'); }
+    if (r.ok) {
+      void Analytics.track('auth_success', { provider: 'apple' });
+      tap('success');
+      setSuccess({ provider: 'apple', identity: 'Apple ID' });
+    } else {
+      void Analytics.track('auth_failed', { provider: 'apple', reason: r.reason.slice(0, 80) });
+      setError(r.reason);
+      tap('warn');
+    }
+  }
+
+  // Render a clear success state inside the modal so the user sees their
+  // sign-in landed before the modal auto-closes.
+  if (success) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+        <View style={styles.header}>
+          <View style={{ width: 28 }} />
+          <Text variant="bodyMedium">Sync your Coco</Text>
+          <Pressable onPress={() => router.back()} accessibilityLabel="Done" hitSlop={12}>
+            <Text variant="bodyMedium" style={{ color: colors.primary, fontWeight: '700' }}>Done</Text>
+          </Pressable>
+        </View>
+        <View style={{ flex: 1, padding: spacing.xl, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={[styles.successCircle, { backgroundColor: colors.primarySoft, borderColor: colors.primary }]}>
+            <Ionicons name="cloud-done" size={64} color={colors.primary} />
+          </View>
+          <Text variant="display" align="center" style={{ marginTop: spacing.xl }}>You're synced.</Text>
+          <Text variant="body" tone="dim" align="center" style={{ marginTop: spacing.sm, maxWidth: 320 }}>
+            Signed in as <Text variant="bodyMedium" tone="primary">{success.identity}</Text>. Your moods, journals, check-ins and chat history will follow you across devices.
+          </Text>
+          <Card tone="primary" style={{ marginTop: spacing.xl, alignSelf: 'stretch' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+              <Text variant="caption" tone="primary" style={{ flex: 1 }}>
+                Pulling existing data from the cloud, pushing local writes that haven't synced yet…
+              </Text>
+            </View>
+          </Card>
+          <Button label="Done" icon="arrow-forward" fullWidth size="lg" style={{ marginTop: spacing.xl }} onPress={() => router.back()} />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -225,6 +279,29 @@ function AppleSignInButton({ onPress, loading }: { onPress: () => void; loading:
   );
 }
 
+// Translate Firebase error codes / messages into plain language.
+function friendlyAuthError(raw: string): string {
+  if (/email-already-in-use/i.test(raw)) {
+    return 'That email is already in use. Tap "Have an account? Sign in" to log in instead.';
+  }
+  if (/wrong-password|invalid-credential/i.test(raw)) {
+    return "Email or password didn't match. Try again, or tap 'New here? Create an account'.";
+  }
+  if (/user-not-found/i.test(raw)) {
+    return "No account with that email. Tap 'New here? Create an account' to make one.";
+  }
+  if (/weak-password/i.test(raw)) {
+    return 'Password needs to be at least 6 characters.';
+  }
+  if (/network-request-failed/i.test(raw)) {
+    return 'Network hiccup — check your connection and try again.';
+  }
+  if (/too-many-requests/i.test(raw)) {
+    return 'Too many attempts. Take a breath and try again in a minute.';
+  }
+  return raw;
+}
+
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
   input: { borderRadius: radius.lg, padding: 14, borderWidth: StyleSheet.hairlineWidth },
@@ -236,5 +313,13 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     paddingTop: 0,
     height: 0,
+  },
+  successCircle: {
+    width: 132,
+    height: 132,
+    borderRadius: 66,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
   },
 });

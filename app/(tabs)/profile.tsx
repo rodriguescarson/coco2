@@ -60,53 +60,62 @@ export default function Profile() {
       <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: 120 }}>
         <Text variant="display">{user.name ? user.name : 'You'}</Text>
         <Text variant="caption" tone="dim" style={{ marginTop: 4 }}>
-          Everything here lives on your device unless you say otherwise.
+          {auth.user && !auth.user.isAnonymous
+            ? `Signed in as ${auth.user.email ?? auth.user.uid.slice(0, 10)}.`
+            : 'Everything here lives on your device unless you say otherwise.'}
         </Text>
+
+        {/* Account banner — high prominence so users know whether sync is on */}
+        {auth.available ? (
+          auth.user && !auth.user.isAnonymous ? (
+            <View style={[styles.syncBanner, { backgroundColor: colors.primarySoft, borderColor: colors.primary, marginTop: spacing.lg }]}>
+              <View style={[styles.syncIcon, { backgroundColor: colors.primary }]}>
+                <Ionicons name="cloud-done" size={22} color={colors.primaryFg} />
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text variant="bodyMedium" tone="primary" style={{ fontWeight: '700' }}>Synced to the cloud</Text>
+                <Text variant="caption" tone="primary" style={{ opacity: 0.85, marginTop: 2 }}>
+                  {auth.user.email ?? auth.user.uid.slice(0, 10)}
+                </Text>
+              </View>
+              <Pressable onPress={() => signOut()} hitSlop={8} accessibilityLabel="Sign out" style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}>
+                <Text variant="caption" tone="primary" style={{ fontWeight: '700' }}>Sign out</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable
+              onPress={() => router.push('/auth/sign-in')}
+              accessibilityRole="button"
+              accessibilityLabel="Sign in to sync"
+              style={({ pressed }) => [styles.syncBanner, { backgroundColor: colors.bgElevated, borderColor: colors.border, marginTop: spacing.lg, opacity: pressed ? 0.8 : 1 }]}
+            >
+              <View style={[styles.syncIcon, { backgroundColor: colors.surfaceMuted }]}>
+                <Ionicons name="cloud-offline-outline" size={22} color={colors.textDim} />
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text variant="bodyMedium" style={{ fontWeight: '700' }}>Local only — tap to sync</Text>
+                <Text variant="caption" tone="dim" style={{ marginTop: 2 }}>Email · Google · Apple. Keep your streak across devices.</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+            </Pressable>
+          )
+        ) : (
+          <View style={[styles.syncBanner, { backgroundColor: colors.surfaceMuted, borderColor: colors.border, marginTop: spacing.lg }]}>
+            <View style={[styles.syncIcon, { backgroundColor: colors.surface }]}>
+              <Ionicons name="cloud-offline" size={22} color={colors.textDim} />
+            </View>
+            <View style={{ flex: 1, marginLeft: spacing.md }}>
+              <Text variant="bodyMedium">Sync not configured</Text>
+              <Text variant="caption" tone="dim">Add the Firebase web app id in app.json.</Text>
+            </View>
+          </View>
+        )}
 
         <View style={[styles.statsRow, { marginTop: spacing.xl }]}>
           <Stat label="Day streak" value={stats.streak} colors={colors} />
           <Stat label="Mood logs" value={stats.moods} colors={colors} />
           <Stat label="Entries" value={stats.journals} colors={colors} />
         </View>
-
-        <Section title="Account">
-          {auth.available ? (
-            auth.user && !auth.user.isAnonymous ? (
-              <Card>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={[styles.iconRound, { backgroundColor: colors.primarySoft }]}>
-                    <Ionicons name="cloud-done-outline" size={20} color={colors.primary} />
-                  </View>
-                  <View style={{ flex: 1, marginLeft: spacing.md }}>
-                    <Text variant="bodyMedium">Synced</Text>
-                    <Text variant="caption" tone="dim">{auth.user.email ?? auth.user.uid.slice(0, 10)}</Text>
-                  </View>
-                  <Pressable onPress={() => signOut()} hitSlop={8} accessibilityLabel="Sign out">
-                    <Text variant="caption" tone="primary" style={{ fontWeight: '600' }}>Sign out</Text>
-                  </Pressable>
-                </View>
-              </Card>
-            ) : (
-              <Card tone="primary" onPress={() => router.push('/auth/sign-in')} accessibilityLabel="Sign in to sync">
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={[styles.iconRound, { backgroundColor: colors.surface }]}>
-                    <Ionicons name="cloud-upload-outline" size={20} color={colors.primary} />
-                  </View>
-                  <View style={{ flex: 1, marginLeft: spacing.md }}>
-                    <Text variant="bodyMedium" tone="primary">Sign in to sync across devices</Text>
-                    <Text variant="caption" tone="primary" style={{ opacity: 0.85 }}>Google · Apple · Email · keep your streak</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.primary} />
-                </View>
-              </Card>
-            )
-          ) : (
-            <Card tone="muted">
-              <Text variant="bodyMedium">Local only</Text>
-              <Text variant="caption" tone="dim">Add the Firebase web app id in app.json to enable sync.</Text>
-            </Card>
-          )}
-        </Section>
 
         <Section title="My bookings">
           <Card onPress={() => router.push('/booking')} accessibilityLabel="View bookings">
@@ -289,6 +298,20 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  syncBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+  },
+  syncIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
