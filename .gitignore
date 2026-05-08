@@ -44,9 +44,9 @@ android-service-account.json
 credentials.json
 credentials/
 
-# Firebase per-platform config (regenerate via `firebase apps:sdkconfig`)
-GoogleService-Info.plist
-google-services.json
+# GoogleService-Info.plist and google-services.json ARE committed —
+# they contain non-secret per-project identifiers per Firebase docs,
+# and EAS Build needs them at the native prebuild step.
 
 # typescript
 *.tsbuildinfo

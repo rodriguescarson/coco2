@@ -110,10 +110,15 @@ Then:
 
 For the Play Store, repeat with the release SHA-1 from your upload key.
 
-### 4. Per-developer config files (not in git)
+### 4. Per-platform Firebase config (committed)
 
-`GoogleService-Info.plist` and `google-services.json` live in the repo
-root and are gitignored. Each developer should regenerate them with:
+`GoogleService-Info.plist` and `google-services.json` are checked
+into the repo. Per Firebase docs, the values inside are non-secret
+per-project identifiers — security is enforced by Firestore rules
+and the auth providers, not by hiding the config. EAS Build needs
+them at native prebuild time so committing is the simplest path.
+
+If you ever swap to a different Firebase project, regenerate via:
 
 ```sh
 npx firebase apps:sdkconfig IOS 1:522896815441:ios:12d7392fe869a7a7a8cf70 \
