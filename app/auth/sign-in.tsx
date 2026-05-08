@@ -8,7 +8,7 @@ import { Text } from '../../components/ui/Text';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { useTheme, spacing, radius } from '../../lib/theme';
-import { useAuth, useGoogleSignIn, signInWithApple, upgradeWithEmailPassword, isExpoGo } from '../../lib/auth';
+import { useAuth, useGoogleSignIn, signInWithApple, upgradeWithEmailPassword } from '../../lib/auth';
 import { tap } from '../../lib/haptics';
 import { useScreenTracking, Analytics } from '../../lib/analytics';
 
@@ -156,45 +156,17 @@ export default function SignIn() {
             ) : null}
 
             <View style={{ gap: spacing.md, marginTop: spacing.xl }}>
-              {isExpoGo ? (
-                <Card tone="muted" style={{ paddingVertical: 14, alignItems: 'center' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Ionicons name="logo-google" size={18} color={colors.textDim} />
-                    <Text variant="caption" tone="dim" style={{ fontWeight: '600' }}>
-                      Google Sign-In needs a dev build
-                    </Text>
-                  </View>
-                  <Text variant="caption" tone="dim" style={{ marginTop: 4, textAlign: 'center' }}>
-                    Google blocks Expo's proxy redirect URL since 2024. Use email below for now, or run a development build.
-                  </Text>
-                </Card>
-              ) : (
-                <Button
-                  label="Continue with Google"
-                  icon="logo-google"
-                  variant="secondary"
-                  size="lg"
-                  fullWidth
-                  loading={busy === 'google'}
-                  onPress={doGoogle}
-                />
-              )}
+              <Button
+                label="Continue with Google"
+                icon="logo-google"
+                variant="secondary"
+                size="lg"
+                fullWidth
+                loading={busy === 'google'}
+                onPress={doGoogle}
+              />
               {Platform.OS === 'ios' ? (
-                isExpoGo ? (
-                  <Card tone="muted" style={{ paddingVertical: 14, alignItems: 'center' }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                      <Ionicons name="logo-apple" size={18} color={colors.textDim} />
-                      <Text variant="caption" tone="dim" style={{ fontWeight: '600' }}>
-                        Apple Sign-In needs a dev build
-                      </Text>
-                    </View>
-                    <Text variant="caption" tone="dim" style={{ marginTop: 4, textAlign: 'center' }}>
-                      Expo Go can't carry your bundle id, so Firebase rejects the token. Use Google or email here, or build a dev client to enable Apple.
-                    </Text>
-                  </Card>
-                ) : (
-                  <AppleSignInButton onPress={doApple} loading={busy === 'apple'} />
-                )
+                <AppleSignInButton onPress={doApple} loading={busy === 'apple'} />
               ) : null}
             </View>
 

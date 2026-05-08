@@ -5,12 +5,6 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import Constants from 'expo-constants';
 
-// True when the app is running inside Expo Go (the prebuilt host app),
-// rather than a custom dev client or a production build. Apple Sign-In via
-// Firebase will *always* fail here because the ID token audience is
-// host.exp.Exponent and Firebase expects your bundle ID.
-const isExpoGo = Constants.appOwnership === 'expo';
-export { isExpoGo };
 import {
   ensureFirebase,
   signInAnonymously,
@@ -109,14 +103,7 @@ export async function upgradeWithEmailPassword(email: string, password: string):
 
 // Google sign-in via expo-auth-session.
 // Caller should use useGoogleSignIn() inside a component for the request/promptAsync hooks.
-//
-// Important: Google Sign-In is NOT supported inside Expo Go anymore. Google
-// killed the auth.expo.io proxy redirect in 2024 and now requires a redirect
-// URI bound to your real bundle id. Expo Go's bundle id is host.exp.Exponent,
-// which Google rejects with "Access blocked: Authorization Error". Use a dev
-// build (npx expo prebuild + eas build --profile development) to enable it.
-//
-// We use useIdTokenAuthRequest so Firebase gets a real id_token directly
+// Uses useIdTokenAuthRequest so Firebase gets a real id_token directly
 // (rather than an auth code that needs server-side exchange).
 export function useGoogleSignIn() {
   const extra = (Constants.expoConfig?.extra ?? {}) as {
@@ -133,13 +120,6 @@ export function useGoogleSignIn() {
   });
 
   async function start(): Promise<{ ok: true } | { ok: false; reason: string }> {
-    if (isExpoGo) {
-      return {
-        ok: false,
-        reason:
-          "Google Sign-In can't run inside Expo Go anymore — Google blocks the auth.expo.io proxy. Run a development build to enable it, or use email/password here.",
-      };
-    }
     const fb = ensureFirebase();
     if (!fb) return { ok: false, reason: 'Firebase not configured' };
     if (!extra.googleClientIdWeb && !extra.googleClientIdIos && !extra.googleClientIdAndroid) {
@@ -163,16 +143,9 @@ export function useGoogleSignIn() {
   return { start, ready: !!request };
 }
 
-// Apple sign-in (iOS native; requires a development build, not Expo Go).
+// Apple sign-in (iOS native).
 export async function signInWithApple(): Promise<{ ok: true } | { ok: false; reason: string }> {
   if (Platform.OS !== 'ios') return { ok: false, reason: 'Apple sign-in is iOS only' };
-  if (isExpoGo) {
-    return {
-      ok: false,
-      reason:
-        'Apple Sign-In can\'t be used inside Expo Go. The token audience would be host.exp.Exponent, which Firebase rejects. Run a development build (npx expo prebuild + eas build --profile development) to enable it.',
-    };
-  }
   const available = await AppleAuthentication.isAvailableAsync().catch(() => false);
   if (!available) return { ok: false, reason: 'Apple sign-in unavailable on this device' };
   const fb = ensureFirebase();
