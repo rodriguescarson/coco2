@@ -42,6 +42,10 @@ android-service-account.json
 *.p12
 *.keystore
 
+# Firebase per-platform config (regenerate via `firebase apps:sdkconfig`)
+GoogleService-Info.plist
+google-services.json
+
 # typescript
 *.tsbuildinfo
 

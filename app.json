@@ -26,10 +26,22 @@
       "bundleIdentifier": "com.rodriguescarson.coco",
       "buildNumber": "1",
       "icon": "./assets/icon.png",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "usesAppleSignIn": true,
+      "entitlements": {
+        "com.apple.developer.applesignin": ["Default"]
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "Coco can listen for anonymous voice journaling sessions when you start one.",
-        "NSUserTrackingUsageDescription": "Coco never tracks you across apps. This permission is unused unless you opt in to contribute anonymized research data."
+        "NSUserTrackingUsageDescription": "Coco never tracks you across apps. This permission is unused unless you opt in to contribute anonymized research data.",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.522896815441-5as5ihtg0sll3cduopqcop1f43phub0b"
+            ]
+          }
+        ]
       },
       "config": {
         "usesNonExemptEncryption": false
@@ -38,6 +50,7 @@
     "android": {
       "package": "com.rodriguescarson.coco",
       "versionCode": 1,
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0E8A5F"
@@ -75,7 +88,8 @@
           }
         }
       ],
-      "expo-audio"
+      "expo-audio",
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true
@@ -92,8 +106,8 @@
         "measurementId": "G-PZMPYC9YTE"
       },
       "googleClientIdWeb": "522896815441-s2bvu8ng4kc4qvpulrcu7au1bia33d2e.apps.googleusercontent.com",
-      "googleClientIdIos": "REPLACE_WITH_IOS_OAUTH_CLIENT_ID.apps.googleusercontent.com",
-      "googleClientIdAndroid": "REPLACE_WITH_ANDROID_OAUTH_CLIENT_ID.apps.googleusercontent.com"
+      "googleClientIdIos": "522896815441-5as5ihtg0sll3cduopqcop1f43phub0b.apps.googleusercontent.com",
+      "googleClientIdAndroid": "REPLACE_WITH_ANDROID_OAUTH_CLIENT_ID_AFTER_ADDING_SHA1"
     }
   }
 }
