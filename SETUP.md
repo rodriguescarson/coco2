@@ -4,7 +4,7 @@ Authoritative state of identifiers and what's wired vs. still manual.
 
 ## Bundle / package identifier
 
-`com.rodriguescarson.coco` — used everywhere consistently.
+`tech.carsonrodrigues.coco` — used everywhere consistently.
 
 | Surface | Status |
 |---|---|
@@ -47,31 +47,31 @@ Authoritative state of identifiers and what's wired vs. still manual.
 Apple Team ID: `AT45DRFG4P` (already wired in `app.json` → `ios.appleTeamId`).
 
 For Apple Sign-In to work end-to-end on a real device, the App ID
-`com.rodriguescarson.coco` needs the **Sign In with Apple**
+`tech.carsonrodrigues.coco` needs the **Sign In with Apple**
 capability turned on.
 
-> ⚠️ The App ID `com.rodriguescarson.coco` already exists on this
+> ⚠️ The App ID `tech.carsonrodrigues.coco` already exists on this
 > account from a previous Coco submission. **Do not try to recreate
-> it** — Apple will refuse with "The App ID 'AT45DRFG4P.com.rodriguescarson.coco'
+> it** — Apple will refuse with "The App ID 'AT45DRFG4P.tech.carsonrodrigues.coco'
 > appears to be in use by the App Store, so it can not be removed".
 > Edit the existing one instead.
 
 1. https://developer.apple.com/account/resources/identifiers/list
 2. Filter dropdown → **App IDs**
-3. Find `com.rodriguescarson.coco` and click it (or use the deep
-   link `https://developer.apple.com/account/resources/identifiers/bundleId/edit?bundleId=com.rodriguescarson.coco`)
+3. Find `tech.carsonrodrigues.coco` and click it (or use the deep
+   link `https://developer.apple.com/account/resources/identifiers/bundleId/edit?bundleId=tech.carsonrodrigues.coco`)
 4. In Capabilities, tick **Sign In with Apple** → **Save**
 
 Optional but recommended for a polished setup:
 
 - **+ Service ID** with description "Coco Apple Sign-In"
-- Identifier: `com.rodriguescarson.coco.apple`
+- Identifier: `tech.carsonrodrigues.coco.apple`
 - Configure: domain `coco-sih.firebaseapp.com`, return URL `https://coco-sih.firebaseapp.com/__/auth/handler`
 
 The `expo-apple-authentication` plugin (now in `app.json`) wires the
 `com.apple.developer.applesignin` entitlement automatically when you
 prebuild, so once the App ID has the capability ticked Apple will
-issue tokens with `aud = com.rodriguescarson.coco`.
+issue tokens with `aud = tech.carsonrodrigues.coco`.
 
 ### 2. Build a dev client (Apple Sign-In does **not** work in Expo Go)
 
@@ -91,7 +91,7 @@ eas build --profile development --platform ios
 # then install via the link EAS gives you
 ```
 
-After this builds, the binary carries `com.rodriguescarson.coco`,
+After this builds, the binary carries `tech.carsonrodrigues.coco`,
 Firebase accepts the Apple token, and Sign In with Apple works.
 
 ### 3. Android SHA-1 (after first Android build)

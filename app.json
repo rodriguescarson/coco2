@@ -23,7 +23,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rodriguescarson.coco",
+      "bundleIdentifier": "tech.carsonrodrigues.coco",
       "buildNumber": "1",
       "icon": "./assets/icon.png",
       "googleServicesFile": "./GoogleService-Info.plist",
@@ -40,7 +40,7 @@
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
-              "com.googleusercontent.apps.522896815441-5as5ihtg0sll3cduopqcop1f43phub0b"
+              "com.googleusercontent.apps.522896815441-4rlo0r4jbc1bggesp2d0egq39okr6u5h"
             ]
           }
         ]
@@ -51,7 +51,7 @@
       "appleTeamId": "AT45DRFG4P"
     },
     "android": {
-      "package": "com.rodriguescarson.coco",
+      "package": "tech.carsonrodrigues.coco",
       "versionCode": 1,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
@@ -111,7 +111,7 @@
         "measurementId": "G-PZMPYC9YTE"
       },
       "googleClientIdWeb": "522896815441-s2bvu8ng4kc4qvpulrcu7au1bia33d2e.apps.googleusercontent.com",
-      "googleClientIdIos": "522896815441-5as5ihtg0sll3cduopqcop1f43phub0b.apps.googleusercontent.com",
+      "googleClientIdIos": "522896815441-4rlo0r4jbc1bggesp2d0egq39okr6u5h.apps.googleusercontent.com",
       "googleClientIdAndroid": "REPLACE_WITH_ANDROID_OAUTH_CLIENT_ID_AFTER_ADDING_SHA1",
       "router": {},
       "eas": {

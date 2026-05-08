@@ -31,10 +31,10 @@
               "client_type": 3
             },
             {
-              "client_id": "522896815441-5as5ihtg0sll3cduopqcop1f43phub0b.apps.googleusercontent.com",
+              "client_id": "522896815441-4rlo0r4jbc1bggesp2d0egq39okr6u5h.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.rodriguescarson.coco"
+                "bundle_id": "tech.carsonrodrigues.coco"
               }
             }
           ]
@@ -67,10 +67,46 @@
               "client_type": 3
             },
             {
-              "client_id": "522896815441-5as5ihtg0sll3cduopqcop1f43phub0b.apps.googleusercontent.com",
+              "client_id": "522896815441-4rlo0r4jbc1bggesp2d0egq39okr6u5h.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.rodriguescarson.coco"
+                "bundle_id": "tech.carsonrodrigues.coco"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522896815441:android:a6f8428103b16db6a8cf70",
+        "android_client_info": {
+          "package_name": "tech.carsonrodrigues.coco"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "522896815441-s2bvu8ng4kc4qvpulrcu7au1bia33d2e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKp5BxNVcuKgfKhJj9QS9P5RXiWPsi51o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "522896815441-s2bvu8ng4kc4qvpulrcu7au1bia33d2e.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "522896815441-4rlo0r4jbc1bggesp2d0egq39okr6u5h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "tech.carsonrodrigues.coco"
               }
             }
           ]
