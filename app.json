@@ -112,7 +112,12 @@
       },
       "googleClientIdWeb": "522896815441-s2bvu8ng4kc4qvpulrcu7au1bia33d2e.apps.googleusercontent.com",
       "googleClientIdIos": "522896815441-5as5ihtg0sll3cduopqcop1f43phub0b.apps.googleusercontent.com",
-      "googleClientIdAndroid": "REPLACE_WITH_ANDROID_OAUTH_CLIENT_ID_AFTER_ADDING_SHA1"
-    }
+      "googleClientIdAndroid": "REPLACE_WITH_ANDROID_OAUTH_CLIENT_ID_AFTER_ADDING_SHA1",
+      "router": {},
+      "eas": {
+        "projectId": "c7903acf-81ff-4cdc-8c0b-875b0283e9aa"
+      }
+    },
+    "owner": "rodriguescarson"
   }
 }
