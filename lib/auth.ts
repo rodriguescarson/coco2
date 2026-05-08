@@ -4,6 +4,13 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import Constants from 'expo-constants';
+
+// True when the app is running inside Expo Go (the prebuilt host app),
+// rather than a custom dev client or a production build. Apple Sign-In via
+// Firebase will *always* fail here because the ID token audience is
+// host.exp.Exponent and Firebase expects your bundle ID.
+const isExpoGo = Constants.appOwnership === 'expo';
+export { isExpoGo };
 import {
   ensureFirebase,
   signInAnonymously,
@@ -136,6 +143,13 @@ export function useGoogleSignIn() {
 // Apple sign-in (iOS native; requires a development build, not Expo Go).
 export async function signInWithApple(): Promise<{ ok: true } | { ok: false; reason: string }> {
   if (Platform.OS !== 'ios') return { ok: false, reason: 'Apple sign-in is iOS only' };
+  if (isExpoGo) {
+    return {
+      ok: false,
+      reason:
+        'Apple Sign-In can\'t be used inside Expo Go. The token audience would be host.exp.Exponent, which Firebase rejects. Run a development build (npx expo prebuild + eas build --profile development) to enable it.',
+    };
+  }
   const available = await AppleAuthentication.isAvailableAsync().catch(() => false);
   if (!available) return { ok: false, reason: 'Apple sign-in unavailable on this device' };
   const fb = ensureFirebase();
