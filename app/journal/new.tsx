@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, View, StyleSheet, Pressable, TextInput } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  TextInput,
+} from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +15,7 @@ import { DataWrite } from '../../lib/data-write';
 import { useScreenTracking, Analytics } from '../../lib/analytics';
 import { journalPrompts } from '../../lib/data';
 import { tap } from '../../lib/haptics';
+import { KeyboardAwareScrollView as ScrollView } from 'react-native-keyboard-controller';
 
 export default function NewEntry() {
   useScreenTracking('journal/new');

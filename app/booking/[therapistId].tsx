@@ -1,5 +1,12 @@
 import { useMemo, useState } from 'react';
-import { ScrollView, View, StyleSheet, Pressable, TextInput, Alert, Platform } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  TextInput,
+  Alert,
+  Platform,
+} from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +20,7 @@ import type { Booking } from '../../lib/storage';
 import { DataWrite } from '../../lib/data-write';
 import { tap } from '../../lib/haptics';
 import { useScreenTracking, Analytics } from '../../lib/analytics';
+import { KeyboardAwareScrollView as ScrollView } from 'react-native-keyboard-controller';
 
 const SLOT_HOURS = [9, 10, 11, 12, 14, 15, 16, 17, 18];
 

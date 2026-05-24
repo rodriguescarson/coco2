@@ -1,0 +1,30 @@
+Coco is a quiet companion for your mind. Track how you feel, breathe through the hard parts, and talk to Coco when you just need someone to listen.
+
+Coco is calm by design. There are no streaks shouting at you, no feeds, no ads. Just gentle tools for the days that feel heavy and the days that feel fine.
+
+WHAT'S INSIDE
+
+• Talk to Coco — an AI listener built to reflect, not lecture. It is crisis-aware and surfaces real hotlines automatically when something serious comes up.
+• Daily check-ins — a soft prompt that changes every day, with a streak you can keep at your own pace.
+• Mood tracker — log how you feel in a tap and watch weekly trends take shape.
+• Journal — write freely with prompts you can shuffle. Entries stay private on your device unless you sign in to sync.
+• Breathing exercises — an animated guide for Box, 4-7-8, Coherent, and the Physiological Sigh.
+• Grounding 5-4-3-2-1 — for the moments that pull you under.
+• Meditation library and sleep sounds — wind down, drift off, reset.
+• Therapy bookings — browse clinicians, pick a slot, and hold a session.
+• Places & people — a directory of clinics, helplines, support groups, and wellness centres.
+• Crisis SOS — one tap to hotlines plus a guided grounding tool.
+
+PRIVACY FIRST
+
+Everything in Coco lives on your device by default. Nothing is uploaded until you choose to sign in. Even then, Coco only syncs your own data under your account — never sold, never handed to advertisers. The chat assistant sends only the message you type to a privacy-respecting AI provider, with no name or identifier attached.
+
+You can erase your on-device data anytime from Profile, and request full deletion of synced data through our support channel.
+
+A NOTE ON WHAT COCO IS NOT
+
+Coco is not a doctor or a therapist, and it does not diagnose or prescribe. It is a calm space to check in with yourself and find support — including the real human help listed in the app — whenever you need it.
+
+If you are in crisis, please reach out to a local emergency number or a hotline right away. Coco's SOS screen can help you find one.
+
+Coco began as the Green Ribbon Army's submission to Smart India Hackathon 2022. It is the part of that work we refused to let go.

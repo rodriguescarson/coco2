@@ -1,5 +1,10 @@
 import { useMemo, useState } from 'react';
-import { ScrollView, View, StyleSheet, Pressable, TextInput } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  TextInput,
+} from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +15,7 @@ import { Button } from '../components/ui/Button';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { therapists, Therapist } from '../lib/data';
 import { useScreenTracking } from '../lib/analytics';
+import { KeyboardAwareScrollView as ScrollView } from 'react-native-keyboard-controller';
 
 const modalities: { id: Therapist['modality'] | 'all'; label: string }[] = [
   { id: 'all', label: 'All' },

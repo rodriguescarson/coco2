@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { View, TextInput, FlatList, StyleSheet, Pressable, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import {
+  View,
+  TextInput,
+  FlatList,
+  StyleSheet,
+  Pressable,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +18,7 @@ import { DataWrite } from '../lib/data-write';
 import { sendChat, detectCrisis, newId, ChatMessage } from '../lib/chat';
 import { tap } from '../lib/haptics';
 import { useScreenTracking, Analytics } from '../lib/analytics';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 
 const SUGGESTED = [
   'I can\'t sleep',
@@ -122,7 +131,7 @@ export default function Chat() {
       </View>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior="padding"
         style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >

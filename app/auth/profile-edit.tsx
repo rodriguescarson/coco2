@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, View, StyleSheet, Pressable, TextInput, Switch } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  TextInput,
+  Switch,
+} from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -12,6 +18,7 @@ import { Storage, ContactProfile } from '../../lib/storage';
 import { DataWrite } from '../../lib/data-write';
 import { tap } from '../../lib/haptics';
 import { useScreenTracking, Analytics } from '../../lib/analytics';
+import { KeyboardAwareScrollView as ScrollView } from 'react-native-keyboard-controller';
 
 const genders = ['Woman', 'Man', 'Non-binary', 'Genderfluid', 'Prefer not to say', 'Self-describe'];
 const ageRanges = ['Under 18', '18–24', '25–34', '35–44', '45–54', '55–64', '65+'];
