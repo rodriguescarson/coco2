@@ -1,0 +1,11 @@
+app_identifier("com.rodriguescarson.coco")  # iOS bundle id / Android package
+apple_dev_portal_id("rodriguescarson@gmail.com")
+team_name("Carson Rodrigues")
+team_id("AT45DRFG4P")
+
+# Auth is done with App Store Connect API key + Play service account
+# (see Fastfile); no per-user Apple ID / Play login is required.
+for_platform :android do
+  json_key_file("./credentials/service-account-key.json")
+  package_name("com.rodriguescarson.coco")
+end

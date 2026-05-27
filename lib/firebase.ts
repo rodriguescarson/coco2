@@ -12,6 +12,7 @@ import {
   EmailAuthProvider,
   linkWithCredential,
   signInWithCredential,
+  createUserWithEmailAndPassword,
   GoogleAuthProvider,
   OAuthProvider,
 } from 'firebase/auth';
@@ -113,6 +114,7 @@ export {
   EmailAuthProvider,
   linkWithCredential,
   signInWithCredential,
+  createUserWithEmailAndPassword,
   GoogleAuthProvider,
   OAuthProvider,
   doc,

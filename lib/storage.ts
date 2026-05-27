@@ -57,6 +57,7 @@ export type Booking = {
   therapistName: string;
   startsAt: number;
   modality: 'video' | 'in-person' | 'both';
+  phone?: string;
   notes?: string;
   status: 'confirmed' | 'cancelled';
   createdAt: number;

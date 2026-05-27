@@ -74,6 +74,12 @@ export default function Bookings() {
                   <Text variant="caption" tone="dim" style={{ marginTop: 2 }}>
                     {new Date(b.startsAt).toLocaleString(undefined, { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                   </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 }}>
+                    <Ionicons name="call-outline" size={13} color={colors.textFaint} />
+                    <Text variant="micro" tone="faint">
+                      {b.phone ? `Awaiting confirmation — they'll call ${b.phone}` : 'Awaiting confirmation call'}
+                    </Text>
+                  </View>
                   {b.notes ? (
                     <Text variant="caption" tone="dim" style={{ marginTop: 8, fontStyle: 'italic' }}>"{b.notes}"</Text>
                   ) : null}

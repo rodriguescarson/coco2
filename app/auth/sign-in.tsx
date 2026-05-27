@@ -50,8 +50,8 @@ export default function SignIn() {
     setBusy('email');
     setError(null);
     try {
-      await upgradeWithEmailPassword(email.trim(), password);
-      void Analytics.track('auth_success', { provider: 'email' });
+      await upgradeWithEmailPassword(email.trim(), password, mode);
+      void Analytics.track('auth_success', { provider: 'email', mode });
       tap('success');
       setSuccess({ provider: 'email', identity: email.trim() });
     } catch (e) {

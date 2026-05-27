@@ -1,0 +1,64 @@
+# Coco store submission via fastlane.
+#
+# Builds are produced by EAS (`npm run build:ios:local` / `npm run build:android:local`)
+# and land in ./build. These lanes only UPLOAD the existing artifacts using the
+# App Store Connect API key and the Play service account — they do not build.
+#
+# Run from the project root (/Users/carson/Projects/coco):
+#   fastlane ios beta          # .ipa -> TestFlight
+#   fastlane android internal  # .aab -> Play internal track
+#
+# Versioning is owned by EAS (appVersionSource: remote, autoIncrement). The
+# stores reject a build/version number that already exists, so build fresh
+# before re-running a lane.
+
+ROOT      = File.expand_path("..", __dir__)
+IPA_PATH  = File.join(ROOT, "build", "coco.ipa")
+AAB_PATH  = File.join(ROOT, "build", "coco.aab")
+ASC_P8    = File.join(ROOT, "credentials", "AuthKey_95P9D8959L.p8")
+PLAY_JSON = File.join(ROOT, "credentials", "service-account-key.json")
+
+ASC_KEY_ID    = "95P9D8959L"
+ASC_ISSUER_ID = "3a0248cc-5c1d-4eeb-813d-82e19a9cf785"
+PACKAGE_NAME  = "com.rodriguescarson.coco"
+
+platform :ios do
+  desc "Upload the existing build/coco.ipa to TestFlight"
+  lane :beta do
+    UI.user_error!("Missing #{IPA_PATH} — run `npm run build:ios:local` first") unless File.exist?(IPA_PATH)
+
+    api_key = app_store_connect_api_key(
+      key_id: ASC_KEY_ID,
+      issuer_id: ASC_ISSUER_ID,
+      key_filepath: ASC_P8,
+      in_house: false,
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: IPA_PATH,
+      skip_submission: true,                       # land in TestFlight, don't auto-submit for review
+      skip_waiting_for_build_processing: true,     # don't block on Apple's processing queue
+    )
+  end
+end
+
+platform :android do
+  desc "Upload the existing build/coco.aab to the Play internal track"
+  lane :internal do
+    UI.user_error!("Missing #{AAB_PATH} — run `npm run build:android:local` first") unless File.exist?(AAB_PATH)
+
+    upload_to_play_store(
+      package_name: PACKAGE_NAME,
+      json_key: PLAY_JSON,
+      aab: AAB_PATH,
+      track: "internal",
+      release_status: "completed",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+end

@@ -23,7 +23,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "tech.carsonrodrigues.coco",
+      "bundleIdentifier": "com.rodriguescarson.coco",
       "buildNumber": "1",
       "icon": "./assets/icon.png",
       "googleServicesFile": "./GoogleService-Info.plist",
@@ -40,7 +40,12 @@
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
-              "com.googleusercontent.apps.522896815441-4rlo0r4jbc1bggesp2d0egq39okr6u5h"
+              "com.googleusercontent.apps.522896815441-5as5ihtg0sll3cduopqcop1f43phub0b"
+            ]
+          },
+          {
+            "CFBundleURLSchemes": [
+              "coco"
             ]
           }
         ]
@@ -51,7 +56,7 @@
       "appleTeamId": "AT45DRFG4P"
     },
     "android": {
-      "package": "tech.carsonrodrigues.coco",
+      "package": "com.rodriguescarson.coco",
       "versionCode": 1,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
@@ -94,7 +99,13 @@
         }
       ],
       "expo-audio",
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.522896815441-5as5ihtg0sll3cduopqcop1f43phub0b"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
@@ -111,7 +122,7 @@
         "measurementId": "G-PZMPYC9YTE"
       },
       "googleClientIdWeb": "522896815441-s2bvu8ng4kc4qvpulrcu7au1bia33d2e.apps.googleusercontent.com",
-      "googleClientIdIos": "522896815441-4rlo0r4jbc1bggesp2d0egq39okr6u5h.apps.googleusercontent.com",
+      "googleClientIdIos": "522896815441-5as5ihtg0sll3cduopqcop1f43phub0b.apps.googleusercontent.com",
       "googleClientIdAndroid": "REPLACE_WITH_ANDROID_OAUTH_CLIENT_ID_AFTER_ADDING_SHA1",
       "router": {},
       "eas": {

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -16,7 +16,7 @@ import { Card } from '../../components/ui/Card';
 import { Pill } from '../../components/ui/Pill';
 import { useTheme, spacing, radius } from '../../lib/theme';
 import { therapists } from '../../lib/data';
-import type { Booking } from '../../lib/storage';
+import { Storage, type Booking, type ContactProfile } from '../../lib/storage';
 import { DataWrite } from '../../lib/data-write';
 import { tap } from '../../lib/haptics';
 import { useScreenTracking, Analytics } from '../../lib/analytics';
@@ -52,7 +52,17 @@ export default function Booking() {
   const [hour, setHour] = useState<number | null>(null);
   const [modality, setModality] = useState<'video' | 'in-person'>(therapist?.modality === 'in-person' ? 'in-person' : 'video');
   const [notes, setNotes] = useState('');
+  const [phone, setPhone] = useState('');
+  const [contact, setContactProfile] = useState<ContactProfile>({});
   const [busy, setBusy] = useState(false);
+
+  // Pull the phone number from the user's profile so the clinician can call to confirm.
+  useEffect(() => {
+    Storage.getContact().then((c) => {
+      setContactProfile(c);
+      if (c.phone) setPhone(c.phone);
+    });
+  }, []);
 
   if (!therapist) {
     return (
@@ -67,8 +77,13 @@ export default function Booking() {
   const selectedDate = days[day];
 
   async function confirm() {
-    if (hour == null || !therapist) return;
+    const trimmedPhone = phone.trim();
+    if (hour == null || !therapist || !trimmedPhone) return;
     setBusy(true);
+    // Remember the number on the profile so future bookings prefill it.
+    if (trimmedPhone !== (contact.phone ?? '')) {
+      await DataWrite.setContact({ ...contact, phone: trimmedPhone });
+    }
     const startsAt = slotKey(selectedDate, hour);
     const booking: Booking = {
       id: `${Date.now()}-${therapist.id}`,
@@ -76,18 +91,20 @@ export default function Booking() {
       therapistName: therapist.name,
       startsAt,
       modality: modality === 'video' ? 'video' : 'in-person',
+      phone: trimmedPhone,
       notes: notes.trim() || undefined,
       status: 'confirmed',
       createdAt: Date.now(),
     };
     await DataWrite.addBooking(booking);
-    void Analytics.track('booking_created', { therapistId: therapist.id, modality: booking.modality });
+    void Analytics.track('booking_created', { therapistId: therapist.id, modality: booking.modality, hasPhone: true });
     tap('success');
     setBusy(false);
+    const msg = `${therapist.name} will call you on ${trimmedPhone} to confirm your ${selectedDate.toDateString()} session at ${formatHour(hour)}.`;
     if (Platform.OS === 'web') {
-      window.alert('Booked. You will see it in Profile → My bookings.');
+      window.alert(`Slot requested. ${msg}`);
     } else {
-      Alert.alert('Booked', `You're set with ${therapist.name} on ${selectedDate.toDateString()} at ${formatHour(hour)}.`);
+      Alert.alert('Slot requested', msg);
     }
     router.replace('/booking');
   }
@@ -202,6 +219,26 @@ export default function Booking() {
           </View>
         </Section>
 
+        {/* Phone — used by the clinician to call and confirm */}
+        <Section title="Phone for confirmation">
+          <View style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <TextInput
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="e.g. +91 98765 43210"
+              placeholderTextColor={colors.textFaint}
+              style={{ color: colors.text, fontSize: 16 }}
+              keyboardType="phone-pad"
+              autoComplete="tel"
+              textContentType="telephoneNumber"
+              accessibilityLabel="Phone number for confirmation call"
+            />
+          </View>
+          <Text variant="caption" tone="dim" style={{ marginTop: spacing.sm }}>
+            {contact.phone ? 'Pulled from your profile — edit if you want them to call a different number.' : 'Add a number so your therapist can call you to confirm.'}
+          </Text>
+        </Section>
+
         {/* Notes */}
         <Section title="Anything you want them to know">
           <View style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -219,16 +256,20 @@ export default function Booking() {
 
         <Card tone="muted" style={{ marginTop: spacing.lg }}>
           <Text variant="caption" tone="dim">
-            This is a held slot — your therapist will confirm by email within 24 hours. You can cancel from Profile → My bookings without penalty up to 12 hours before the session.
+            This is a held slot, not a final booking. {therapist.name} will review it and call you on {phone.trim() || 'your number'} to confirm, usually within 24 hours. You can cancel from Profile → My bookings without penalty up to 12 hours before the session.
           </Text>
         </Card>
 
         <Button
-          label={hour == null ? 'Pick a time' : `Confirm ${selectedDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at ${formatHour(hour)}`}
+          label={
+            hour == null ? 'Pick a time'
+            : !phone.trim() ? 'Add your phone number'
+            : `Confirm ${selectedDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} at ${formatHour(hour)}`
+          }
           icon="checkmark"
           fullWidth
           size="lg"
-          disabled={hour == null}
+          disabled={hour == null || !phone.trim()}
           loading={busy}
           style={{ marginTop: spacing.xl }}
           onPress={confirm}

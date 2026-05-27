@@ -55,3 +55,14 @@ credentials/
 /ios
 /android
 .vercel
+
+# build artifacts (produced locally by EAS, uploaded via fastlane — never committed)
+/build/
+*.aab
+*.ipa
+*.apk
+
+# build / tooling logs
+*.log
+fastlane/report.xml
+fastlane/test_output/

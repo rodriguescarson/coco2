@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Google from 'expo-auth-session/providers/google';
-import * as WebBrowser from 'expo-web-browser';
+import * as Crypto from 'expo-crypto';
 import Constants from 'expo-constants';
+// NOTE: @react-native-google-signin/google-signin is a custom native module, so
+// it is NOT present in Expo Go (its index runs TurboModuleRegistry.getEnforcing
+// at import time and throws there). We therefore lazy-require it only on a
+// dev/production build — never import it statically — so this file still loads
+// in Expo Go with Google sign-in gracefully disabled.
 
 import {
   ensureFirebase,
@@ -13,6 +17,7 @@ import {
   GoogleAuthProvider,
   OAuthProvider,
   signInWithCredential,
+  createUserWithEmailAndPassword,
   EmailAuthProvider,
   linkWithCredential,
   doc,
@@ -21,8 +26,6 @@ import {
   serverTimestamp,
   User,
 } from './firebase';
-
-WebBrowser.maybeCompleteAuthSession();
 
 export type CocoUser = {
   uid: string;
@@ -88,59 +91,124 @@ export async function signOut(): Promise<void> {
   await fbSignOut(fb.auth);
 }
 
-// Email + password (progressive — links to current anon account if present)
-export async function upgradeWithEmailPassword(email: string, password: string): Promise<void> {
+// Email + password. The caller passes the intended mode so we don't guess:
+//  - 'signin' → log in to an EXISTING account (we must NOT try to create/link,
+//    otherwise an anonymous current user makes every attempt fail with
+//    auth/email-already-in-use).
+//  - 'signup' → create a NEW account. If there's an anonymous user, link the
+//    credential to it so local-only data carries over; otherwise create fresh.
+export async function upgradeWithEmailPassword(
+  email: string,
+  password: string,
+  mode: 'signin' | 'signup',
+): Promise<void> {
   const fb = ensureFirebase();
   if (!fb) throw new Error('Firebase not configured');
   const current = fb.auth.currentUser;
-  const credential = EmailAuthProvider.credential(email, password);
+
+  if (mode === 'signin') {
+    const credential = EmailAuthProvider.credential(email, password);
+    await signInWithCredential(fb.auth, credential);
+    return;
+  }
+
+  // signup
   if (current && current.isAnonymous) {
+    const credential = EmailAuthProvider.credential(email, password);
     await linkWithCredential(current, credential);
   } else {
-    await signInWithCredential(fb.auth, credential);
+    await createUserWithEmailAndPassword(fb.auth, email, password);
   }
 }
 
-// Google sign-in via expo-auth-session.
-// Caller should use useGoogleSignIn() inside a component for the request/promptAsync hooks.
-// Uses useIdTokenAuthRequest so Firebase gets a real id_token directly
-// (rather than an auth code that needs server-side exchange).
-export function useGoogleSignIn() {
+// Google sign-in via the native Google Sign-In SDK
+// (@react-native-google-signin/google-signin).
+//
+// We migrated off expo-auth-session: its useIdTokenAuthRequest ran the OAuth
+// implicit flow against the *web* client with a custom-scheme redirect, which
+// Google now blocks ("Access blocked: doesn't comply with Google's OAuth 2.0
+// policy", Error 400: invalid_request). The native SDK uses
+// ASWebAuthenticationSession and is compliant.
+//
+// configure() needs the WEB client id so the returned idToken's audience is one
+// Firebase accepts; iosClientId drives the native iOS flow. Requires a native
+// build — this will not work in Expo Go.
+// Expo Go runs the prebuilt "store client" binary, which has no custom native
+// modules — so we must never touch the Google SDK there.
+const isExpoGo = Constants.executionEnvironment === 'storeClient';
+
+// Lazy accessor so the native module is only required on a real build.
+function getGoogleSignin() {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('@react-native-google-signin/google-signin') as typeof import('@react-native-google-signin/google-signin');
+}
+
+let googleConfigured = false;
+function configureGoogle() {
+  if (googleConfigured) return;
   const extra = (Constants.expoConfig?.extra ?? {}) as {
     googleClientIdWeb?: string;
     googleClientIdIos?: string;
-    googleClientIdAndroid?: string;
   };
-
-  const [request, _response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: extra.googleClientIdWeb,
-    iosClientId: extra.googleClientIdIos,
-    androidClientId: extra.googleClientIdAndroid,
+  getGoogleSignin().GoogleSignin.configure({
     webClientId: extra.googleClientIdWeb,
+    iosClientId: extra.googleClientIdIos,
   });
+  googleConfigured = true;
+}
 
+export function useGoogleSignIn() {
   async function start(): Promise<{ ok: true } | { ok: false; reason: string }> {
     const fb = ensureFirebase();
     if (!fb) return { ok: false, reason: 'Firebase not configured' };
-    if (!extra.googleClientIdWeb && !extra.googleClientIdIos && !extra.googleClientIdAndroid) {
-      return { ok: false, reason: 'Google client id not configured in app.json extra' };
+    if (isExpoGo) {
+      return { ok: false, reason: 'Google sign-in needs the full app build — it is unavailable in Expo Go.' };
     }
-    if (!request) return { ok: false, reason: 'Google sign-in not ready yet' };
-    const r = await promptAsync();
-    if (r?.type !== 'success') return { ok: false, reason: r?.type ?? 'cancelled' };
-    const idToken = (r.params as { id_token?: string } | undefined)?.id_token;
-    if (!idToken) return { ok: false, reason: 'No id_token returned by Google' };
-    const credential = GoogleAuthProvider.credential(idToken);
-    const current = fb.auth.currentUser;
-    if (current && current.isAnonymous) {
-      await linkWithCredential(current, credential);
-    } else {
-      await signInWithCredential(fb.auth, credential);
+    const { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } = getGoogleSignin();
+    try {
+      configureGoogle();
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      const response = await GoogleSignin.signIn();
+      if (!isSuccessResponse(response)) return { ok: false, reason: 'cancelled' };
+      const idToken = response.data.idToken;
+      if (!idToken) return { ok: false, reason: 'No id_token returned by Google' };
+      const credential = GoogleAuthProvider.credential(idToken);
+      const current = fb.auth.currentUser;
+      if (current && current.isAnonymous) {
+        await linkWithCredential(current, credential);
+      } else {
+        await signInWithCredential(fb.auth, credential);
+      }
+      return { ok: true };
+    } catch (e) {
+      if (isErrorWithCode(e)) {
+        if (e.code === statusCodes.SIGN_IN_CANCELLED) return { ok: false, reason: 'cancelled' };
+        if (e.code === statusCodes.IN_PROGRESS) return { ok: false, reason: 'Sign-in already in progress' };
+        if (e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          return { ok: false, reason: 'Google Play Services not available' };
+        }
+      }
+      return { ok: false, reason: (e as Error).message ?? 'Google sign-in failed' };
     }
-    return { ok: true };
   }
 
-  return { start, ready: !!request };
+  return { start, ready: !isExpoGo };
+}
+
+// Generate a one-time nonce for Apple sign-in. Apple embeds SHA-256(rawNonce)
+// in the identity token; Firebase recomputes it from the rawNonce we pass to
+// credential() and rejects the token if they don't match. Omitting this can
+// surface as auth/invalid-credential or missing-or-invalid-nonce.
+async function makeAppleNonce(): Promise<{ rawNonce: string; hashedNonce: string }> {
+  const bytes = await Crypto.getRandomBytesAsync(16);
+  const rawNonce = Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  const hashedNonce = await Crypto.digestStringAsync(
+    Crypto.CryptoDigestAlgorithm.SHA256,
+    rawNonce,
+  );
+  return { rawNonce, hashedNonce };
 }
 
 // Apple sign-in (iOS native).
@@ -152,15 +220,18 @@ export async function signInWithApple(): Promise<{ ok: true } | { ok: false; rea
   if (!fb) return { ok: false, reason: 'Firebase not configured' };
 
   try {
+    const { rawNonce, hashedNonce } = await makeAppleNonce();
     const credential = await AppleAuthentication.signInAsync({
       requestedScopes: [
         AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
         AppleAuthentication.AppleAuthenticationScope.EMAIL,
       ],
+      nonce: hashedNonce,
     });
     const provider = new OAuthProvider('apple.com');
     const fbCredential = provider.credential({
       idToken: credential.identityToken!,
+      rawNonce,
     });
     const current = fb.auth.currentUser;
     if (current && current.isAnonymous) {

@@ -31,7 +31,8 @@
         "resourceClass": "m-medium"
       },
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "credentialsSource": "local"
       }
     }
   },
@@ -39,14 +40,14 @@
     "production": {
       "ios": {
         "appleId": "rodriguescarson@gmail.com",
-        "ascAppId": "6767487389",
+        "ascAppId": "6773467656",
         "appleTeamId": "AT45DRFG4P",
         "ascApiKeyPath": "./credentials/AuthKey_95P9D8959L.p8",
         "ascApiKeyId": "95P9D8959L",
         "ascApiKeyIssuerId": "3a0248cc-5c1d-4eeb-813d-82e19a9cf785"
       },
       "android": {
-        "serviceAccountKeyPath": "./android-service-account.json",
+        "serviceAccountKeyPath": "./credentials/service-account-key.json",
         "track": "internal",
         "releaseStatus": "draft"
       }

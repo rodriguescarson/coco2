@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>522896815441-4rlo0r4jbc1bggesp2d0egq39okr6u5h.apps.googleusercontent.com</string>
+	<string>522896815441-5as5ihtg0sll3cduopqcop1f43phub0b.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.522896815441-4rlo0r4jbc1bggesp2d0egq39okr6u5h</string>
+	<string>com.googleusercontent.apps.522896815441-5as5ihtg0sll3cduopqcop1f43phub0b</string>
 	<key>API_KEY</key>
 	<string>AIzaSyCt7vuYDVK32-9VB1pitQmXVUxsWVMNdAc</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>tech.carsonrodrigues.coco</string>
+	<string>com.rodriguescarson.coco</string>
 	<key>PROJECT_ID</key>
 	<string>coco-sih</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:522896815441:ios:7ef993e698e5dbd5a8cf70</string>
+	<string>1:522896815441:ios:12d7392fe869a7a7a8cf70</string>
 </dict>
 </plist>

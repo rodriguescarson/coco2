@@ -7,7 +7,7 @@ import { createSign } from "node:crypto";
 const KEY_ID = "95P9D8959L";
 const ISSUER = "3a0248cc-5c1d-4eeb-813d-82e19a9cf785";
 const P8 = readFileSync("credentials/AuthKey_95P9D8959L.p8", "utf8");
-const BUNDLE = "tech.carsonrodrigues.coco";
+const BUNDLE = "com.rodriguescarson.coco";
 const MODE = process.argv[2] || "inspect";
 const API = "https://api.appstoreconnect.apple.com/v1";
 
