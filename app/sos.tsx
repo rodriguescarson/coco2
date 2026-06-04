@@ -27,6 +27,23 @@ export default function SOS() {
     Linking.openURL(`tel:${cleaned}`).catch(() => {});
   }
 
+  // Handles any text-line label, e.g. "Text HOME to 741741", "Text CONNECT to 686868",
+  // or a bare URL like "befrienders.org".
+  function openText(label: string, region?: string) {
+    tap('warn');
+    void Analytics.track('hotline_texted', { region: region ?? 'unknown' });
+    const urlMatch = label.match(/[\w.-]+\.[a-z]{2,}(\/\S*)?/i);
+    const shortcode = label.match(/\b(\d{3,6})\b(?!.*\b\d{3,6}\b)/); // last numeric shortcode
+    if (shortcode) {
+      const keyword = label.match(/text\s+([A-Z]+)\b/i)?.[1];
+      const body = keyword ? `?body=${encodeURIComponent(keyword)}` : '';
+      Linking.openURL(`sms:${shortcode[1]}${body}`).catch(() => {});
+    } else if (urlMatch) {
+      const url = urlMatch[0].startsWith('http') ? urlMatch[0] : `https://${urlMatch[0]}`;
+      Linking.openURL(url).catch(() => {});
+    }
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={styles.header}>
@@ -67,13 +84,7 @@ export default function SOS() {
                     variant="secondary"
                     icon="chatbubble-outline"
                     size="sm"
-                    onPress={() => {
-                      if (h.text?.startsWith('Text ') && h.region === 'United States') {
-                        Linking.openURL('sms:741741?body=HOME').catch(() => {});
-                      } else if (h.text?.includes('befrienders.org')) {
-                        Linking.openURL('https://befrienders.org').catch(() => {});
-                      }
-                    }}
+                    onPress={() => openText(h.text!, h.region)}
                   />
                 ) : null}
               </View>

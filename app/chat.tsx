@@ -8,7 +8,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../components/ui/Text';
@@ -19,6 +19,8 @@ import { sendChat, detectCrisis, newId, ChatMessage } from '../lib/chat';
 import { tap } from '../lib/haptics';
 import { useScreenTracking, Analytics } from '../lib/analytics';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { useAiConsent } from '../lib/consent';
+import { AiConsentGate } from '../components/AiConsentGate';
 
 const SUGGESTED = [
   'I can\'t sleep',
@@ -30,9 +32,11 @@ const SUGGESTED = [
 export default function Chat() {
   useScreenTracking('chat');
   const { colors } = useTheme();
+  const { seed } = useLocalSearchParams<{ seed?: string }>();
+  const { consented, loading: consentLoading, grant } = useAiConsent();
   const [user, setUser] = useState<UserProfile>({});
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [draft, setDraft] = useState('');
+  const [draft, setDraft] = useState(seed ?? '');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const listRef = useRef<FlatList>(null);
@@ -108,6 +112,19 @@ export default function Chat() {
     },
     [messages, sending, user.name],
   );
+
+  // Gate the first use behind explicit consent: nothing is sent to the AI
+  // provider until the user agrees (App Store 5.1.1(i)/5.1.2(i)).
+  if (consentLoading) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
+  if (!consented) {
+    return <AiConsentGate feature="Coco" onAccept={grant} onDecline={() => router.back()} />;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>

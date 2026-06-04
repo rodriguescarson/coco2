@@ -1,5 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
-import { useAudioPlayer, useAudioPlayerStatus, AudioSource, setAudioModeAsync, AudioPlayer } from 'expo-audio';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useAudioPlayer,
+  useAudioPlayerStatus,
+  useAudioRecorder,
+  useAudioRecorderState,
+  requestRecordingPermissionsAsync,
+  RecordingPresets,
+  AudioSource,
+  setAudioModeAsync,
+  AudioPlayer,
+} from 'expo-audio';
 
 // Audio sources. These are intentionally short loops with permissive hotlink
 // policies. Pixabay's CDN started gating direct hotlinks in mid-2025, so we
@@ -134,5 +144,83 @@ export function useTrack(opts: { loop?: boolean; volume?: number } = {}) {
     seekToMs(ms: number) {
       try { player.seekTo(ms / 1000); } catch (e) { setError((e as Error).message); }
     },
+  };
+}
+
+export type RecorderStatus = 'idle' | 'recording' | 'stopped' | 'denied';
+
+// useVoiceRecorder wraps expo-audio's recorder for the voice-journaling screen.
+// It owns permission prompting, audio-mode switching, and exposes the recorded
+// file uri once recording stops. Recording always uses HIGH_QUALITY so Whisper
+// gets a clean signal.
+export function useVoiceRecorder() {
+  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const recorderState = useAudioRecorderState(recorder, 250);
+  const [status, setStatus] = useState<RecorderStatus>('idle');
+  const [uri, setUri] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Make sure recording stops if the screen unmounts mid-take.
+  const recorderRef = useRef(recorder);
+  recorderRef.current = recorder;
+  useEffect(() => {
+    return () => {
+      try { if (recorderRef.current.isRecording) recorderRef.current.stop(); } catch {}
+    };
+  }, []);
+
+  const start = useCallback(async () => {
+    setError(null);
+    try {
+      const perm = await requestRecordingPermissionsAsync();
+      if (!perm.granted) {
+        setStatus('denied');
+        return false;
+      }
+      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
+      await recorder.prepareToRecordAsync();
+      recorder.record();
+      setUri(null);
+      setStatus('recording');
+      return true;
+    } catch (e) {
+      setError((e as Error).message);
+      setStatus('idle');
+      return false;
+    }
+  }, [recorder]);
+
+  const stop = useCallback(async (): Promise<string | null> => {
+    try {
+      await recorder.stop();
+      // Re-enable normal playback routing after recording.
+      await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
+      const recordedUri = recorder.uri ?? null;
+      setUri(recordedUri);
+      setStatus('stopped');
+      return recordedUri;
+    } catch (e) {
+      setError((e as Error).message);
+      setStatus('idle');
+      return null;
+    }
+  }, [recorder]);
+
+  const reset = useCallback(() => {
+    setUri(null);
+    setError(null);
+    setStatus('idle');
+  }, []);
+
+  return {
+    status,
+    uri,
+    error,
+    isRecording: recorderState.isRecording,
+    durationMs: recorderState.durationMillis ?? 0,
+    metering: recorderState.metering,
+    start,
+    stop,
+    reset,
   };
 }

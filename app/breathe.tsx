@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, ScrollView, Linking } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming, cancelAnimation } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '../components/ui/Text';
 import { Card } from '../components/ui/Card';
+import { MedicalDisclaimer } from '../components/MedicalDisclaimer';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { breathingPatterns, BreathingPattern } from '../lib/data';
 import { tap } from '../lib/haptics';
@@ -28,51 +29,79 @@ export default function Breathe() {
       </View>
 
       {!running ? (
-        <View style={{ padding: spacing.lg, flex: 1 }}>
-          <Text variant="display">Breathe.</Text>
-          <Text variant="body" tone="dim" style={{ marginTop: 4 }}>
-            Pick a pattern. Coco guides the rhythm.
-          </Text>
+        <View style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.md }}>
+            <Text variant="display">Breathe.</Text>
+            <Text variant="body" tone="dim" style={{ marginTop: 4 }}>
+              Pick a pattern. Coco guides the rhythm.
+            </Text>
 
-          <View style={{ gap: spacing.md, marginTop: spacing.xl }}>
-            {breathingPatterns.map((p) => (
-              <Card
-                key={p.id}
-                onPress={() => setSelected(p)}
-                tone={selected.id === p.id ? 'primary' : 'surface'}
-                accessibilityLabel={p.name}
-                accessibilityHint={p.description}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <View style={{ flex: 1 }}>
-                    <Text variant="bodyMedium">{p.name}</Text>
-                    <Text variant="caption" tone="dim" style={{ marginTop: 2 }}>{p.description}</Text>
-                    <View style={{ flexDirection: 'row', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                      {p.phases.map(([label, sec], i) => (
-                        <View key={i} style={[styles.phaseChip, { borderColor: colors.border }]}>
-                          <Text variant="micro" style={{ color: colors.textDim }}>{label} · {sec}s</Text>
-                        </View>
-                      ))}
+            <View style={{ gap: spacing.md, marginTop: spacing.xl }}>
+              {breathingPatterns.map((p) => (
+                <Card
+                  key={p.id}
+                  onPress={() => setSelected(p)}
+                  tone={selected.id === p.id ? 'primary' : 'surface'}
+                  accessibilityLabel={p.name}
+                  accessibilityHint={p.description}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ flex: 1 }}>
+                      <Text variant="bodyMedium">{p.name}</Text>
+                      <Text variant="caption" tone="dim" style={{ marginTop: 2 }}>{p.description}</Text>
+                      <View style={{ flexDirection: 'row', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                        {p.phases.map(([label, sec], i) => (
+                          <View key={i} style={[styles.phaseChip, { borderColor: colors.border }]}>
+                            <Text variant="micro" style={{ color: colors.textDim }}>{label} · {sec}s</Text>
+                          </View>
+                        ))}
+                      </View>
                     </View>
+                    {selected.id === p.id ? <Ionicons name="checkmark-circle" size={22} color={colors.primary} /> : null}
                   </View>
-                  {selected.id === p.id ? <Ionicons name="checkmark-circle" size={22} color={colors.primary} /> : null}
-                </View>
-              </Card>
-            ))}
-          </View>
+                </Card>
+              ))}
+            </View>
 
-          <View style={{ flex: 1 }} />
-          <Pressable
-            onPress={() => { setRunning(true); tap('select'); }}
-            accessibilityRole="button"
-            accessibilityLabel={`Begin ${selected.name}`}
-            style={({ pressed }) => [
-              styles.start,
-              { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
-            ]}
-          >
-            <Text variant="bodyMedium" style={{ color: colors.primaryFg, fontWeight: '700' }}>Begin {selected.name}</Text>
-          </Pressable>
+            {selected.sources.length > 0 ? (
+              <View style={{ marginTop: spacing.lg }}>
+                <Text variant="micro" tone="dim" style={{ textTransform: 'uppercase', marginBottom: spacing.sm }}>
+                  {selected.name} · sources
+                </Text>
+                <View style={{ gap: 6 }}>
+                  {selected.sources.map((s) => (
+                    <Pressable
+                      key={s.url}
+                      onPress={() => Linking.openURL(s.url).catch(() => {})}
+                      accessibilityRole="link"
+                      accessibilityLabel={`Open source: ${s.label}`}
+                      style={({ pressed }) => [styles.sourceRow, { opacity: pressed ? 0.6 : 1 }]}
+                    >
+                      <Ionicons name="link-outline" size={14} color={colors.primary} style={{ marginTop: 2 }} />
+                      <Text variant="caption" style={{ flex: 1, marginLeft: 8, color: colors.text }}>{s.label}</Text>
+                      <Ionicons name="open-outline" size={13} color={colors.textFaint} />
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            ) : null}
+
+            <MedicalDisclaimer compact />
+          </ScrollView>
+
+          <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.lg, paddingTop: spacing.sm }}>
+            <Pressable
+              onPress={() => { setRunning(true); tap('select'); }}
+              accessibilityRole="button"
+              accessibilityLabel={`Begin ${selected.name}`}
+              style={({ pressed }) => [
+                styles.start,
+                { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
+              ]}
+            >
+              <Text variant="bodyMedium" style={{ color: colors.primaryFg, fontWeight: '700' }}>Begin {selected.name}</Text>
+            </Pressable>
+          </View>
         </View>
       ) : (
         <BreathRunner pattern={selected} onExit={() => setRunning(false)} />
@@ -180,6 +209,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: StyleSheet.hairlineWidth,
   },
+  sourceRow: { flexDirection: 'row', alignItems: 'flex-start' },
   start: {
     height: 56,
     borderRadius: radius.pill,

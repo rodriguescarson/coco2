@@ -15,6 +15,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
+### ios build
+
+```sh
+[bundle exec] fastlane ios build
+```
+
+Build a signed App Store .ipa (-> ./build/coco.ipa)
+
 ### ios beta
 
 ```sh
@@ -23,10 +31,26 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Upload the existing build/coco.ipa to TestFlight
 
+### ios release
+
+```sh
+[bundle exec] fastlane ios release
+```
+
+Build a signed .ipa and upload it to TestFlight
+
 ----
 
 
 ## Android
+
+### android build
+
+```sh
+[bundle exec] fastlane android build
+```
+
+Build a signed release .aab (-> ./build/coco.aab)
 
 ### android internal
 
@@ -35,6 +59,14 @@ Upload the existing build/coco.ipa to TestFlight
 ```
 
 Upload the existing build/coco.aab to the Play internal track
+
+### android release
+
+```sh
+[bundle exec] fastlane android release
+```
+
+Build a signed .aab and upload it to the Play internal track
 
 ----
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Pressable, TextInput, ScrollView } from 'react-native';
+import { View, StyleSheet, Pressable, TextInput, ScrollView, Linking } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +16,7 @@ import { Text } from '../../components/ui/Text';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Pill } from '../../components/ui/Pill';
+import { MedicalDisclaimer } from '../../components/MedicalDisclaimer';
 import { useTheme, spacing, radius, type Colors } from '../../lib/theme';
 import {
   Storage,
@@ -191,9 +192,23 @@ function BreathePanel() {
             <Ionicons name="sparkles" size={14} color={colors.primary} />
             <Text variant="caption" tone="primary" style={{ marginLeft: 6 }}>{selected.benefit}</Text>
           </View>
+          {selected.sources.map((s) => (
+            <Pressable
+              key={s.url}
+              onPress={() => Linking.openURL(s.url).catch(() => {})}
+              accessibilityRole="link"
+              accessibilityLabel={`Open source: ${s.label}`}
+              style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'flex-start', marginTop: spacing.sm, opacity: pressed ? 0.6 : 1 }]}
+            >
+              <Ionicons name="link-outline" size={13} color={colors.primary} style={{ marginTop: 2 }} />
+              <Text variant="micro" tone="primary" style={{ flex: 1, marginLeft: 6 }}>{s.label}</Text>
+            </Pressable>
+          ))}
         </Card>
 
         <Button label={`Begin ${selected.name}`} icon="play" fullWidth size="lg" style={{ marginTop: spacing.lg }} onPress={() => { setRunning(true); }} />
+
+        <MedicalDisclaimer compact />
       </ScrollView>
     </Animated.View>
   );

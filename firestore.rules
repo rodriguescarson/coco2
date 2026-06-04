@@ -1,15 +1,86 @@
 rules_version = '2';
 
-// Users own their slice. Anonymous + signed-in accounts can only read/write
-// documents under /users/{their-own-uid}. Everything else is denied.
+// Coco Firestore security rules.
+//
+// 1. Private user data lives under /users/{uid}/** — only that user can touch it.
+// 2. Community peer-support content lives in shared top-level collections:
+//      /posts/{postId}     — anonymous, moderated circle posts
+//      /reports/{reportId} — abuse reports (write-only moderation queue)
+//    Posts are readable by any signed-in user; the client hides removed,
+//    heavily-reported, and blocked-author posts. Server-side moderation runs
+//    before a post is created (see api/moderate.ts) and human review acts on
+//    the /reports queue.
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Moderators. Add your Firebase Auth UID here to read the /reports queue
+    // and remove posts from the in-app Moderation screen (which shows your UID).
+    // Empty by default → admin powers are dormant until you opt in.
+    function isAdmin() {
+      return request.auth != null && request.auth.uid in [
+        'qnp4TAZYyDZgpCtZHTnoOVM12NT2', // Carson (rodriguescarson@gmail.com)
+      ];
+    }
+
+    // --- Private, per-user data -------------------------------------------
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
 
       match /{collection}/{docId=**} {
         allow read, write: if request.auth != null && request.auth.uid == uid;
       }
+    }
+
+    // --- Shared community posts -------------------------------------------
+    match /posts/{postId} {
+      // Any signed-in user can read the feed.
+      allow read: if request.auth != null;
+
+      // A user may only create a post authored by themselves, with a sane,
+      // length-bounded body and the safety fields initialised.
+      allow create: if request.auth != null
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.circleId is string
+        && request.resource.data.circleId.size() <= 64
+        && request.resource.data.body is string
+        && request.resource.data.body.size() > 0
+        && request.resource.data.body.size() <= 1000
+        && request.resource.data.authorHandle is string
+        && request.resource.data.authorHandle.size() <= 40
+        && request.resource.data.reportCount == 0
+        && request.resource.data.removed == false;
+
+      // Reporting: any signed-in user may bump reportCount by exactly one, and
+      // may not touch the body, author, circle, or removed flag.
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['reportCount', 'updatedAt'])
+        && request.resource.data.reportCount == resource.data.reportCount + 1
+        && request.resource.data.removed == resource.data.removed
+        && request.resource.data.authorUid == resource.data.authorUid
+        && request.resource.data.body == resource.data.body
+        && request.resource.data.circleId == resource.data.circleId;
+
+      // Removal: only the author or a moderator may hide a post.
+      allow update: if (isAdmin() || resource.data.authorUid == request.auth.uid)
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['removed', 'updatedAt']);
+
+      // Authors and moderators can hard-delete.
+      allow delete: if request.auth != null
+        && (isAdmin() || resource.data.authorUid == request.auth.uid);
+    }
+
+    // --- Abuse reports ----------------------------------------------------
+    match /reports/{reportId} {
+      allow create: if request.auth != null
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.postId is string
+        && request.resource.data.reason is string
+        && request.resource.data.reason.size() <= 200;
+      // Moderators read the queue (in-app screen / console) and clear it.
+      allow read, delete: if isAdmin();
+      allow update: if false;
     }
   }
 }

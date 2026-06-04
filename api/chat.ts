@@ -44,6 +44,7 @@ Crisis handling:
   3. Encourage immediate human support (a trusted person or a hotline).
   4. Mention that they can tap the SOS button in the app for hotlines.
   5. Avoid asking probing questions about method or intent. Avoid platitudes.
+- If the user indicates they are a teenager, a minor, or under 18 (e.g. mentions their age, school, or parents), warmly encourage telling a parent, guardian, school counsellor, or another trusted adult in addition to a hotline. Youth-focused lines (such as Childline) can feel safer to a young person. Do not ask them to confirm their age.
 - If you detect a crisis signal, set the response so it is short and steady. The app surfaces a "Get support now" banner automatically.
 
 Boundaries:
@@ -59,6 +60,12 @@ const crisisPatterns = [
   /\b(self[-\s]?harm|cut\s*myself|hurt\s*myself)\b/i,
   /\bno\s*reason\s*to\s*live\b/i,
   /\b(overdose|jump\s*off)\b/i,
+  // Common euphemisms / platform slang (frequent among younger users)
+  /\bk\.?m\.?s\.?\b/i,
+  /\bunalive\b/i,
+  /\bbetter\s*off\s*(without\s*me|dead|gone)\b/i,
+  /\bdon'?t\s*want\s*to\s*be\s*here\b/i,
+  /\bnobody\s*would\s*(care|miss\s*me|notice)\b/i,
 ];
 
 function detectCrisis(text: string): boolean {
@@ -82,7 +89,7 @@ function looksHarmful(text: string): boolean {
 
 const SAFE_REPLY = `I'm here, and I care about what's going on for you. I'm not going to help with that part of your message — but I want to keep talking with you about what's underneath it. Are you safe right now?
 
-If things feel urgent, please tap the SOS button in the app for hotlines that are open right now, or reach out to someone you trust.`;
+If things feel urgent, please tap the SOS button in the app for hotlines that are open right now, or reach out to someone you trust. If you're a teen, telling a parent, guardian, or school counsellor can help too — you don't have to carry this by yourself.`;
 
 function corsHeaders() {
   return {
@@ -152,7 +159,7 @@ export default async function handler(req: Request): Promise<Response> {
     ...(crisis
       ? [{
           role: 'system' as const,
-          content: 'A crisis signal was just detected in the most recent user message. Respond briefly, with steadiness, and gently point toward the SOS button and human support. Do not ask probing method questions.',
+          content: 'A crisis signal was just detected in the most recent user message. Respond briefly, with steadiness, and gently point toward the SOS button and human support. Do not ask probing method questions. If anything suggests the user is a teen or minor, also encourage telling a trusted adult (parent, guardian, or school counsellor).',
         }]
       : []),
     ...trimmed,
@@ -199,6 +206,8 @@ export default async function handler(req: Request): Promise<Response> {
               { label: 'Open SOS in the app', url: 'coco://sos' },
               { label: '988 Lifeline (US)', phone: '988' },
               { label: 'Crisis Text Line (US)', phone: '741741' },
+              { label: 'Childline UK (under 19)', phone: '08001111' },
+              { label: 'CHILDLINE India', phone: '1098' },
               { label: 'Befrienders Worldwide', url: 'https://befrienders.org' },
             ],
           }

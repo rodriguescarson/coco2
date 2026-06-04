@@ -1,3 +1,8 @@
+export type Source = {
+  label: string;
+  url: string;
+};
+
 export type BreathingPattern = {
   id: string;
   name: string;
@@ -5,52 +10,66 @@ export type BreathingPattern = {
   // Each phase is [label, seconds]
   phases: [string, number][];
   benefit: string;
+  // Cited sources for the wellness claims above (App Store Guideline 1.4.1).
+  sources: Source[];
 };
 
 export const breathingPatterns: BreathingPattern[] = [
   {
     id: 'box',
     name: 'Box Breathing',
-    description: 'Equal counts to steady the nervous system. Used by Navy SEALs.',
+    description: 'Equal counts in, hold, out, hold — a simple way to slow your breathing when stress spikes.',
     phases: [
       ['Inhale', 4],
       ['Hold', 4],
       ['Exhale', 4],
       ['Hold', 4],
     ],
-    benefit: 'Calms anxiety, sharpens focus',
+    benefit: 'May help with focus and calm',
+    sources: [
+      { label: 'Cleveland Clinic — Box Breathing Benefits', url: 'https://health.clevelandclinic.org/box-breathing-benefits' },
+    ],
   },
   {
     id: '478',
     name: '4-7-8',
-    description: 'Slow exhale activates the parasympathetic system.',
+    description: 'A longer exhale than inhale, a pattern often used to wind down before sleep.',
     phases: [
       ['Inhale', 4],
       ['Hold', 7],
       ['Exhale', 8],
     ],
-    benefit: 'Helps with sleep and panic',
+    benefit: 'Often used for winding down',
+    sources: [
+      { label: 'Cleveland Clinic — 4-7-8 Breathing', url: 'https://health.clevelandclinic.org/4-7-8-breathing' },
+    ],
   },
   {
     id: 'coherent',
     name: 'Coherent Breathing',
-    description: 'Five and a half seconds in, five and a half out.',
+    description: 'Roughly five seconds in, five seconds out — a slow, even pace around six breaths a minute.',
     phases: [
       ['Inhale', 5],
       ['Exhale', 5],
     ],
-    benefit: 'Heart rate variability',
+    benefit: 'Slow, paced breathing',
+    sources: [
+      { label: 'NCCIH (NIH) — Relaxation Techniques for Health', url: 'https://www.nccih.nih.gov/health/relaxation-techniques-what-you-need-to-know' },
+    ],
   },
   {
     id: 'sigh',
     name: 'Physiological Sigh',
-    description: 'Two quick inhales, one long exhale. Fastest way to lower stress.',
+    description: 'Two inhales, then one long exhale — a pattern studied at Stanford for easing stress in the moment.',
     phases: [
       ['Inhale', 2],
       ['Inhale again', 1],
       ['Long exhale', 6],
     ],
-    benefit: 'Quick stress relief',
+    benefit: 'Studied for in-the-moment stress',
+    sources: [
+      { label: 'Balban et al. (2023), Cell Reports Medicine — Brief structured respiration practices', url: 'https://www.cell.com/cell-reports-medicine/fulltext/S2666-3791(22)00474-8' },
+    ],
   },
 ];
 
@@ -126,9 +145,14 @@ export const crisisHotlines: Hotline[] = [
   { region: 'United States', name: 'Crisis Text Line', phone: '741741', text: 'Text HOME to 741741' },
   { region: 'India', name: 'Vandrevala Foundation', phone: '18602662345' },
   { region: 'India', name: 'iCall (TISS)', phone: '+919152987821' },
+  { region: 'India (under 18)', name: 'CHILDLINE India', phone: '1098' },
   { region: 'United Kingdom', name: 'Samaritans', phone: '116123' },
+  { region: 'UK (under 19)', name: 'Childline', phone: '08001111' },
   { region: 'Canada', name: 'Talk Suicide Canada', phone: '18334564566' },
+  { region: 'Canada (youth)', name: 'Kids Help Phone', phone: '18006686868', text: 'Text CONNECT to 686868' },
   { region: 'Australia', name: 'Lifeline', phone: '131114' },
+  { region: 'Australia (5–25)', name: 'Kids Helpline', phone: '1800551800' },
+  { region: 'United States (youth)', name: 'Teen Line', phone: '8008528336', text: 'Text TEEN to 839863' },
   { region: 'Global', name: 'Befrienders Worldwide directory', phone: '', text: 'befrienders.org' },
 ];
 
@@ -184,4 +208,22 @@ export const assessments = [
   { id: 'gad2', title: 'Anxiety check (GAD-2)', minutes: 1, description: 'Two questions to flag worry.' },
   { id: 'sleep', title: 'Sleep quality scan', minutes: 2, description: 'How rested are you?' },
   { id: 'burnout', title: 'Burnout self-check', minutes: 3, description: 'Energy, cynicism, efficacy.' },
+];
+
+// Peer-support circles. A fixed catalog (like therapists/places) — posts live
+// in Firestore keyed by circle id; the circles themselves are curated in code.
+export type Circle = {
+  id: string;
+  name: string;
+  topic: string;
+  description: string;
+};
+
+export const circleCatalog: Circle[] = [
+  { id: 'anxiety', name: 'Late-night anxiety', topic: 'Anxiety', description: 'Racing thoughts when the world goes quiet.' },
+  { id: 'grief', name: 'Grief, slowly', topic: 'Grief', description: 'For loss that doesn’t keep a schedule.' },
+  { id: 'burnout', name: 'Burnout & overwhelm', topic: 'Burnout', description: 'Running on empty, finding a way back.' },
+  { id: 'family', name: 'New parents, new feelings', topic: 'Family', description: 'The tender, messy parts of caregiving.' },
+  { id: 'recovery', name: 'Sober, curious', topic: 'Recovery', description: 'Changing your relationship with substances.' },
+  { id: 'identity', name: 'Quiet, queer, here', topic: 'Identity', description: 'Being seen, at your own pace.' },
 ];

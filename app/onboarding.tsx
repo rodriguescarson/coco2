@@ -48,7 +48,7 @@ export default function Onboarding() {
             <View style={{ gap: spacing.md }}>
               <Card tone="muted" pad="md">
                 <Text variant="caption" tone="dim">
-                  Coco is not a substitute for emergency care. If you are in crisis, tap SOS at any time for a hotline.
+                  Coco offers educational wellness content and supportive conversation. It is not a medical service, does not provide diagnosis or treatment, and is not a substitute for a doctor or licensed clinician. If you are in crisis, tap SOS at any time for a hotline, or call your local emergency number.
                 </Text>
               </Card>
               <Button label="Get started" iconRight="arrow-forward" fullWidth size="lg" onPress={() => setStep(1)} />

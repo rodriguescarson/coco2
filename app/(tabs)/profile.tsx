@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ScrollView, View, StyleSheet, Switch, Pressable, Alert, Platform } from 'react-native';
+import { ScrollView, View, StyleSheet, Switch, Pressable, Alert, Platform, Linking } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,8 @@ import { useTheme, spacing, radius } from '../../lib/theme';
 import { Storage, streakFromCheckins, UserProfile, Prefs } from '../../lib/storage';
 import { useAuth, signOut } from '../../lib/auth';
 import { useScreenTracking } from '../../lib/analytics';
+import { useAiConsent } from '../../lib/consent';
+import { PRIVACY_POLICY_URL, AI_PROVIDER_NAME } from '../../lib/legal';
 
 export default function Profile() {
   useScreenTracking('profile');
@@ -17,6 +19,7 @@ export default function Profile() {
   const [user, setUser] = useState<UserProfile>({});
   const [prefs, setPrefs] = useState<Prefs>({ hapticsOn: true, reminders: true });
   const [stats, setStats] = useState({ moods: 0, journals: 0, streak: 0 });
+  const aiConsent = useAiConsent();
 
   const load = useCallback(async () => {
     const [u, p, m, j, c] = await Promise.all([
@@ -197,11 +200,53 @@ export default function Profile() {
 
         <Section title="Privacy">
           <Card>
-            <Text variant="body">Your data is local. Coco doesn't sync your moods, journals, or chat without your explicit setup.</Text>
-            <Text variant="caption" tone="dim" style={{ marginTop: 6 }}>
-              The chatbot sends only the message you type to a privacy-respecting LLM provider. No identifiers are sent.
+            <Text variant="body">Your moods, journals, and check-ins stay on your device unless you sign in to sync them.</Text>
+            <Text variant="caption" tone="dim" style={{ marginTop: 8, lineHeight: 19 }}>
+              When you chat with Coco or use voice journaling, the messages you type (and your first name, if set) — or the audio you record — are sent to {AI_PROVIDER_NAME}, a third-party AI provider, to generate replies or transcribe your words. Audio is transcribed and then discarded.
             </Text>
           </Card>
+
+          <Pressable
+            onPress={() => Linking.openURL(PRIVACY_POLICY_URL).catch(() => {})}
+            accessibilityRole="link"
+            accessibilityLabel="Open Privacy Policy"
+            style={({ pressed }) => [styles.linkRow, { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.8 : 1 }]}
+          >
+            <Ionicons name="shield-checkmark-outline" size={18} color={colors.primary} />
+            <Text variant="bodyMedium" style={{ flex: 1, marginLeft: spacing.md }}>Privacy Policy</Text>
+            <Ionicons name="open-outline" size={16} color={colors.textFaint} />
+          </Pressable>
+
+          {aiConsent.consented ? (
+            <Pressable
+              onPress={() => {
+                Alert.alert(
+                  'Turn off AI features?',
+                  `Coco will stop sending anything to ${AI_PROVIDER_NAME}. You'll be asked to agree again next time you open chat or voice journaling.`,
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Turn off', style: 'destructive', onPress: () => aiConsent.revoke() },
+                  ],
+                );
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Turn off AI features"
+              style={({ pressed }) => [styles.linkRow, { backgroundColor: colors.surface, borderColor: colors.border, opacity: pressed ? 0.8 : 1 }]}
+            >
+              <Ionicons name="sparkles-outline" size={18} color={colors.text} />
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text variant="bodyMedium">AI features are on</Text>
+                <Text variant="caption" tone="dim">Tap to withdraw consent</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={colors.textFaint} />
+            </Pressable>
+          ) : (
+            <Card tone="muted" style={{ marginTop: spacing.sm }}>
+              <Text variant="caption" tone="dim">
+                AI features are off. Coco will ask for your permission before sending anything when you first open chat or voice journaling.
+              </Text>
+            </Card>
+          )}
         </Section>
 
         <Section title="Danger zone">
@@ -293,6 +338,14 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: radius.lg,
     borderWidth: 1,
+  },
+  linkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    marginTop: spacing.sm,
   },
   iconRound: {
     width: 38,

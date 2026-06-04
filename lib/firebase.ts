@@ -23,13 +23,18 @@ import {
   doc,
   setDoc,
   getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
   collection,
   serverTimestamp,
   writeBatch,
   query,
+  where,
   orderBy,
   limit,
   getDocs,
+  increment,
 } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -120,13 +125,18 @@ export {
   doc,
   setDoc,
   getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
   collection,
   serverTimestamp,
   writeBatch,
   query,
+  where,
   orderBy,
   limit,
   getDocs,
+  increment,
 };
 
 export type { User };

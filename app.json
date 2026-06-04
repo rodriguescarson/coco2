@@ -35,8 +35,7 @@
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSMicrophoneUsageDescription": "Coco can listen for anonymous voice journaling sessions when you start one.",
-        "NSUserTrackingUsageDescription": "Coco never tracks you across apps. This permission is unused unless you opt in to contribute anonymized research data.",
+        "NSMicrophoneUsageDescription": "Coco uses the microphone only when you tap record in voice journaling, to turn what you say into a private journal entry. Audio is transcribed and not stored.",
         "CFBundleURLTypes": [
           {
             "CFBundleURLSchemes": [
@@ -112,6 +111,7 @@
     },
     "extra": {
       "apiBaseUrl": "https://coco-api-nine.vercel.app",
+      "adminUids": ["qnp4TAZYyDZgpCtZHTnoOVM12NT2"],
       "firebase": {
         "apiKey": "AIzaSyBM4cN4aGimCCRrDosTpdJykQohOJKXmVA",
         "authDomain": "coco-sih.firebaseapp.com",
