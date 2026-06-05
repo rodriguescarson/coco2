@@ -2,6 +2,10 @@
 
 A quiet companion for your mind — built on Expo SDK 54.
 
+**Now available:**
+[App Store](https://apps.apple.com/app/coco-calm-mental-health/id6773467656)
+· [Google Play](https://play.google.com/store/apps/details?id=com.rodriguescarson.coco)
+
 This repo is the unified successor of [`Coco`](https://github.com/rodriguescarson/Coco)
 (archived prototype) and the older `coco2` app. Everything has been rewritten
 on a modern stack: Expo SDK 54, React 19, React Native 0.81, Expo Router,
