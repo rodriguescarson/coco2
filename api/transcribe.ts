@@ -83,20 +83,16 @@ export default async function handler(req: Request): Promise<Response> {
     });
 
     if (!upstream.ok) {
+      // Log provider detail server-side only; don't leak status/error to client.
       const text = await upstream.text().catch(() => '');
-      return json(
-        {
-          error: "Couldn't transcribe that just now.",
-          upstreamStatus: upstream.status,
-          upstreamError: text.slice(0, 400),
-        },
-        502,
-      );
+      console.error('groq transcribe upstream error', upstream.status, text.slice(0, 400));
+      return json({ error: "Couldn't transcribe that just now." }, 502);
     }
 
     const data = (await upstream.json()) as { text?: string };
     return json({ text: (data.text ?? '').trim() });
   } catch (err) {
-    return json({ error: (err as Error).message?.slice(0, 200) || 'Transcription failed' }, 500);
+    console.error('groq transcribe handler error', (err as Error).message);
+    return json({ error: 'Transcription failed' }, 500);
   }
 }

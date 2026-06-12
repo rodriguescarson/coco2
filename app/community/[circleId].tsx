@@ -186,6 +186,8 @@ export default function CircleFeed() {
             ref={listRef}
             data={posts}
             keyExtractor={(p) => p.id}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
             contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.md, gap: spacing.md, flexGrow: 1 }}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
             ListEmptyComponent={

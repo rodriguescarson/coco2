@@ -183,12 +183,13 @@ export default async function handler(req: Request): Promise<Response> {
     });
 
     if (!upstream.ok) {
+      // Log upstream detail server-side only; never leak provider errors/status
+      // (which can include quota/key hints) to the client.
       const text = await upstream.text().catch(() => '');
+      console.error('groq chat upstream error', upstream.status, text.slice(0, 400));
       return json({
         reply: "I couldn't reach the language model just now. Try a breathing exercise, and I'll be here when you come back.",
         crisisDetected: crisis,
-        upstreamStatus: upstream.status,
-        upstreamError: text.slice(0, 400),
       }, 502);
     }
 
@@ -214,10 +215,10 @@ export default async function handler(req: Request): Promise<Response> {
         : {}),
     });
   } catch (err) {
+    console.error('groq chat handler error', (err as Error).message);
     return json({
       reply: "Something went wrong on my side. I'm sorry. Try again in a moment, or use a tool from the Tools tab while we wait.",
       crisisDetected: crisis,
-      error: (err as Error).message?.slice(0, 200),
     }, 500);
   }
 }
