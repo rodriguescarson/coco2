@@ -3,6 +3,8 @@
 // and applies guardrails: refuse harmful instructions, surface SOS resources on
 // crisis signals, never produce medical diagnoses or medication advice.
 
+import { guard } from './_auth';
+
 export const config = { runtime: 'edge' };
 
 type Role = 'user' | 'assistant' | 'system';
@@ -94,7 +96,7 @@ If things feel urgent, please tap the SOS button in the app for hotlines that ar
 function corsHeaders() {
   return {
     'access-control-allow-origin': '*',
-    'access-control-allow-headers': 'content-type',
+    'access-control-allow-headers': 'content-type, authorization',
     'access-control-allow-methods': 'POST, OPTIONS',
   } as Record<string, string>;
 }
@@ -113,6 +115,10 @@ export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') {
     return json({ error: 'Method not allowed' }, 405);
   }
+
+  // Auth (monitor mode unless ENFORCE_AUTH=true) + soft per-identity rate limit.
+  const { rejection } = await guard(req, corsHeaders());
+  if (rejection) return rejection;
 
   let body: Body;
   try {

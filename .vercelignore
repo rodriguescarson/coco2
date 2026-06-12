@@ -1,0 +1,14 @@
+node_modules
+ios
+android
+.expo
+build
+assets
+fastlane
+credentials
+docs
+app
+components
+*.log
+*.keystore
+*.jks

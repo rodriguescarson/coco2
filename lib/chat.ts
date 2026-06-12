@@ -1,4 +1,20 @@
 import Constants from 'expo-constants';
+import { ensureFirebase } from './firebase';
+
+// Attaches the signed-in user's Firebase ID token so the Groq-proxy endpoints
+// can authenticate the caller. Returns an empty object when there is no user
+// (or token retrieval fails) so the request still goes out — the server runs in
+// monitor mode until ENFORCE_AUTH is flipped, keeping old clients working.
+async function authHeader(): Promise<Record<string, string>> {
+  try {
+    const user = ensureFirebase()?.auth.currentUser;
+    if (!user) return {};
+    const token = await user.getIdToken();
+    return { authorization: `Bearer ${token}` };
+  } catch {
+    return {};
+  }
+}
 
 export type ChatMessage = {
   id: string;
@@ -29,7 +45,7 @@ export async function sendChat(req: ChatRequest, signal?: AbortSignal): Promise<
   const url = `${getBaseUrl().replace(/\/$/, '')}/api/chat`;
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: { 'content-type': 'application/json', ...(await authHeader()) },
     body: JSON.stringify(req),
     signal,
   });
@@ -56,7 +72,13 @@ export async function transcribeAudio(uri: string, signal?: AbortSignal): Promis
   // match, but the native bridge expects this { uri, name, type } shape.
   form.append('file', { uri, name, type: 'audio/m4a' } as unknown as Blob, name);
 
-  const res = await fetch(url, { method: 'POST', body: form, signal });
+  // Don't set content-type — RN sets the multipart boundary itself.
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { ...(await authHeader()) },
+    body: form,
+    signal,
+  });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`Transcription failed (${res.status}): ${text.slice(0, 200)}`);
@@ -81,7 +103,7 @@ export async function moderateText(text: string, signal?: AbortSignal): Promise<
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', ...(await authHeader()) },
       body: JSON.stringify({ text }),
       signal,
     });
