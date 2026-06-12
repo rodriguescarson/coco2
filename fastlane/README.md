@@ -39,6 +39,14 @@ Upload the existing build/coco.ipa to TestFlight
 
 Build a signed .ipa and upload it to TestFlight
 
+### ios submit_review
+
+```sh
+[bundle exec] fastlane ios submit_review
+```
+
+Submit the latest uploaded build to App Store review (manual release)
+
 ----
 
 
