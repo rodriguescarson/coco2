@@ -4,6 +4,8 @@
 // { text }. The audio is never stored — it is streamed straight through to
 // Groq and discarded once the response is returned.
 
+import { guard } from './_auth';
+
 export const config = { runtime: 'edge' };
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/audio/transcriptions';
@@ -18,7 +20,7 @@ const MAX_BYTES = 20 * 1024 * 1024;
 function corsHeaders() {
   return {
     'access-control-allow-origin': '*',
-    'access-control-allow-headers': 'content-type',
+    'access-control-allow-headers': 'content-type, authorization',
     'access-control-allow-methods': 'POST, OPTIONS',
   } as Record<string, string>;
 }
@@ -37,6 +39,10 @@ export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') {
     return json({ error: 'Method not allowed' }, 405);
   }
+
+  // Auth (monitor mode unless ENFORCE_AUTH=true) + soft per-identity rate limit.
+  const { rejection } = await guard(req, corsHeaders());
+  if (rejection) return rejection;
 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {

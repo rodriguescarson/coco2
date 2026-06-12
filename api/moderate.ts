@@ -11,6 +11,8 @@
 // api/chat.ts so the same standards apply whether a user talks to Coco or
 // posts to a circle.
 
+import { guard } from './_auth';
+
 export const config = { runtime: 'edge' };
 
 type Body = { text?: string };
@@ -56,7 +58,7 @@ function anyMatch(patterns: RegExp[], text: string): boolean {
 function corsHeaders() {
   return {
     'access-control-allow-origin': '*',
-    'access-control-allow-headers': 'content-type',
+    'access-control-allow-headers': 'content-type, authorization',
     'access-control-allow-methods': 'POST, OPTIONS',
   } as Record<string, string>;
 }
@@ -75,6 +77,10 @@ export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') {
     return json({ error: 'Method not allowed' }, 405);
   }
+
+  // Auth (monitor mode unless ENFORCE_AUTH=true) + soft per-identity rate limit.
+  const { rejection } = await guard(req, corsHeaders());
+  if (rejection) return rejection;
 
   let body: Body;
   try {
