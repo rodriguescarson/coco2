@@ -1,120 +1,96 @@
-# Coco — App Store & Play Store release runbook
+# Store Release — coco
 
-Everything in `app.json` / `eas.json` is store-ready. What's left are the
-one-time human steps that need accounts, keys, and console access — they can't
-be done from code.
+How to build and ship this app to the **App Store** (iOS) and **Google Play** (Android)
+with fastlane. Signing is unattended via the App Store Connect API key (`.p8`) and the
+Android keystore — no interactive Apple/Google login needed.
 
-## 0. Prerequisites (one time)
-
-- Logged into EAS: `npx eas-cli whoami` → should print `rodriguescarson`.
-- Apple Developer Program membership ($99/yr) for iOS.
-- Google Play Developer account ($25 one time) for Android.
-- Local toolchain (already verified on this machine): Xcode + CocoaPods +
-  fastlane (iOS), JDK 17 + Android SDK (Android).
-
-## 1. Firebase config files
-
-Coco uses Firebase for auth and backend services. The following files must be
-present at the project root before any build — they are committed intentionally
-(they contain non-secret per-project identifiers, per Firebase docs):
-
-- `GoogleService-Info.plist` — iOS
-- `google-services.json` — Android
-
-If either file is missing, builds will fail at the native prebuild step.
-
-## 2. Building
-
-`appVersionSource` is `remote` — EAS owns the version/build numbers and
-auto-increments on each production build, so you never bump them by hand.
-
-### Cloud (recommended)
-```
-npm run build:android      # → .aab on EAS servers
-npm run build:ios          # → .ipa on EAS servers
-```
-
-### Local (this machine has the full toolchain)
-```
-npm run build:android:local   # → ./build/coco.aab
-npm run build:ios:local       # → ./build/coco.ipa  (needs signing creds)
-```
-
-First iOS build will ask to generate a Distribution Certificate + provisioning
-profile — let EAS manage them (answer yes). The same credentials are reused by
-cloud and local builds.
-
-> **iOS local build in a non-interactive shell (CI / background):** the build
-> can stop on interactive prompts and fail if stdin isn't a TTY (piping `yes`
-> does **not** work). Use `--non-interactive` to skip optional setup steps:
+> Run everything from the project root:
+> ```bash
+> cd ~/Projects/coco
 > ```
-> npx eas-cli build --platform ios --profile production --local \
->   --output ./build/coco.ipa --non-interactive
-> ```
-> Note: Coco's `app.json` has no `aps-environment` entitlement (no
-> `expo-notifications`), so the "Would you like to set up Push Notifications?"
-> prompt will not appear. The `--non-interactive` flag is still a safe default
-> for unattended runs.
 
-> **Version numbers:** both stores reject a build/version that already exists,
-> so always build fresh before (re-)submitting. EAS auto-increments on each
-> build: Android `versionCode` and iOS `buildNumber` advance independently.
+## App specifics
+| | |
+|---|---|
+| iOS scheme / workspace | `Coco` / `ios/Coco.xcworkspace` |
+| iOS bundle id | `com.rodriguescarson.coco` |
+| Android package | `com.rodriguescarson.coco` |
+| ASC API key (.p8) | `credentials/AuthKey_95P9D8959L.p8` (key id `95P9D8959L`) |
+| Play service account | `credentials/service-account-key.json` |
+| Android keystore | coco-dev keystore wired via android/gradle.properties (COCO_* props) — fully self-contained |
+| Current version | `1.0.1` |
 
-## 3. iOS — App Store Connect
+---
 
-- App: bundle id `com.rodriguescarson.coco`, name "Coco"
-- Numeric App ID: `6773467656`
-- ASC API key: `credentials/AuthKey_95P9D8959L.p8` (key ID `95P9D8959L`,
-  issuer `3a0248cc-5c1d-4eeb-813d-82e19a9cf785`) — already configured in
-  `eas.json` → `submit.production.ios` and `fastlane/Fastfile`.
+## iOS
 
-Submit. Two interchangeable paths upload the same `build/coco.ipa`:
-- **EAS:** `npm run submit:ios` (uses `eas.json` → `submit.production.ios`).
-- **fastlane:** `fastlane ios beta` (run from the project root). Lane defined
-  in `fastlane/Fastfile`; uploads to TestFlight with the ASC API key, then
-  stops (`skip_submission` — does not auto-submit for App Store review).
+```bash
+# 1. (Expo CNG apps) regenerate the native project + CocoaPods.
+#    Skips on bare projects that commit ios/. Fixes the stale-Pods
+#    "PrivacyInfo.xcprivacy ... no such file" build error.
+npx expo prebuild --clean -p ios
 
-## 4. Android — Google Play
+# 2. Build a signed .ipa and upload to TestFlight (skip_submission).
+fastlane ios release          # = build + upload to TestFlight
 
-- Package: `com.rodriguescarson.coco`
-- Service account key: `credentials/service-account-key.json` — already
-  configured in `eas.json` → `submit.production.android` and `fastlane/Fastfile`.
-
-The first upload to Play must be done manually in the console to accept the
-app-signing terms; after that either path uploads `build/coco.aab` to the
-internal track:
-- **EAS:** `npm run submit:android` (uses `eas.json` → `submit.production.android`).
-- **fastlane:** `fastlane android internal` (run from the project root). Lane
-  defined in `fastlane/Fastfile`; uploads via the service account, metadata and
-  images skipped (manage those in the console).
-
-Promote internal → closed → production from the Play Console once tested.
-
-Check track state read-only anytime:
-```
-node scripts/check_play_access.mjs credentials/service-account-key.json com.rodriguescarson.coco
+# 3. Submit the uploaded build to App Store review (manual release after approval).
+fastlane ios submit_review
 ```
 
-## 5. Store listing assets you'll still need (uploaded in the consoles, not code)
+**Version / build-number rules (App Store Connect):**
+- If you see `Invalid Pre-Release Train. The train version 'X' is closed`, that
+  version is already released — **bump the marketing version** in `app.json` /
+  `app.config.ts` (and the Info.plist) to a new value, then rebuild.
+- If you see `The bundle version must be higher than the previously uploaded version: N`,
+  set `CFBundleVersion` (build number) above N.
+- First-ever submission requires a **complete App Store listing** (description,
+  keywords, screenshots per device size, support/privacy URLs, age rating). Create it
+  in App Store Connect once; after that `submit_review` works directly.
+- `submit_review` uploads only release notes from a clean dir; it does **not** touch
+  your existing listing/screenshots, and sets export-compliance (non-exempt encryption = false).
 
-- iOS screenshots: 6.7" (1290×2796) and 6.5" (1242×2688) minimum.
-- Android screenshots: phone (min 2), 1024×500 feature graphic, 512×512 icon.
-- Privacy policy URL (required by both stores), support URL.
-- App Store privacy "nutrition label" + Play **Data safety** form. The app
-  collects account data, journal/mood entries, and voice recordings. See
-  `fastlane/datasafety/coco_datasafety.csv` for the Play data-safety answers.
+---
 
-## 6. Notes / decisions baked into config
+## Android (Google Play — production)
 
-- **Firebase:** `google-services.json` and `GoogleService-Info.plist` are
-  committed at the project root and referenced in `app.json` — required for
-  native prebuild.
-- **Push notifications:** not yet enabled. No `aps-environment` entitlement,
-  no `expo-notifications` dependency. Add `expo-notifications` and the
-  entitlement in `app.json` when you're ready, then re-run `eas build`.
-- **Android keystore (local builds):** configured in `credentials.json`,
-  stored at `credentials/coco-dev.keystore` (gitignored). Cloud builds use
-  EAS-managed credentials (no `credentialsSource: local` on iOS; Android
-  production uses `credentialsSource: local` via `credentials.json`).
-- **OTA updates:** `appVersionSource: remote`; ship JS-only fixes with
-  `eas update --channel production` without a new store build.
+```bash
+# 1. (Expo CNG apps) generate the native android project.
+npx expo prebuild --clean -p android
+
+# 2. Ensure release signing is wired (see "Android keystore" above):
+#    credentials/keystore.properties must contain
+#      storeFile=<path-to-keystore>   storePassword=...   keyAlias=...   keyPassword=...
+#    and android/app/build.gradle's release buildType uses signingConfigs.release.
+
+# 3. Build the signed .aab.
+fastlane android build        # -> ./build/<app>.aab  (or ./android/app/build/outputs/bundle/release/app-release.aab)
+
+# 4. Upload to the Play production track (as a draft you publish from the console).
+fastlane android production   # if defined; otherwise:
+fastlane run upload_to_play_store package_name:com.rodriguescarson.coco \
+  json_key:credentials/service-account-key.json \
+  aab:android/app/build/outputs/bundle/release/app-release.aab \
+  track:production release_status:draft \
+  skip_upload_apk:true skip_upload_metadata:true skip_upload_changelogs:true \
+  skip_upload_images:true skip_upload_screenshots:true
+```
+
+**Android rules:**
+- `Version code N has already been used` → bump `versionCode` in `android/app/build.gradle`
+  (and `app.config.ts`) above N.
+- `The Android App Bundle was signed with the wrong key` → you signed with the wrong
+  keystore. The app's real upload key is **EAS-managed**. Fetch it:
+  `eas credentials` → Android → *Download existing keystore*, then point
+  `keystore.properties` at it (match the alias + passwords it prints).
+- A brand-new Play app needs its **listing + content rating** created in the Play
+  Console before the first production upload is accepted.
+
+---
+
+## Prerequisites
+- `fastlane` and Xcode installed; Android needs JDK 17 + the Android SDK.
+- `credentials/AuthKey_95P9D8959L.p8` and `credentials/service-account-key.json` present (gitignored).
+- Free disk: iOS builds accumulate large DerivedData/Archives — clear with
+  `rm -rf ~/Library/Developer/Xcode/DerivedData/* ~/Library/Developer/Xcode/Archives/*`.
+- These lanes upload **drafts / to review** — nothing auto-releases to the public; you
+  do the final publish from App Store Connect / Play Console.
