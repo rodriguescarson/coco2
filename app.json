@@ -3,13 +3,13 @@
     "name": "Coco",
     "slug": "coco",
     "scheme": "coco",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "primaryColor": "#0E8A5F",
-    "description": "A quiet companion for your mind. Mood, journal, breathing, sleep, daily check-ins, an AI listener, and a directory of crisis resources — all in one calm app.",
+    "description": "A quiet companion for your mind. Mood, journal, breathing, sleep, daily check-ins, an AI listener, and a directory of crisis resources \u2014 all in one calm app.",
     "githubUrl": "https://github.com/rodriguescarson/coco2",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -111,7 +111,9 @@
     },
     "extra": {
       "apiBaseUrl": "https://coco-api-nine.vercel.app",
-      "adminUids": ["qnp4TAZYyDZgpCtZHTnoOVM12NT2"],
+      "adminUids": [
+        "qnp4TAZYyDZgpCtZHTnoOVM12NT2"
+      ],
       "firebase": {
         "apiKey": "AIzaSyBM4cN4aGimCCRrDosTpdJykQohOJKXmVA",
         "authDomain": "coco-sih.firebaseapp.com",
