@@ -156,6 +156,8 @@ export default function Chat() {
           ref={listRef}
           data={messages}
           keyExtractor={(m) => m.id}
+          initialNumToRender={12}
+          maxToRenderPerBatch={12}
           contentContainerStyle={{ padding: spacing.lg, paddingBottom: 24 }}
           renderItem={({ item }) => <Bubble msg={item} />}
           onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
