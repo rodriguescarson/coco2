@@ -94,3 +94,15 @@ fastlane run upload_to_play_store package_name:com.rodriguescarson.coco \
   `rm -rf ~/Library/Developer/Xcode/DerivedData/* ~/Library/Developer/Xcode/Archives/*`.
 - These lanes upload **drafts / to review** — nothing auto-releases to the public; you
   do the final publish from App Store Connect / Play Console.
+
+---
+
+## Release status — 2026-06-28 (growth rollout)
+
+**Merged to `main` (ship on the next build):**
+- Smart review prompt (after a breathing session) — PR #7
+- Shareable gentle streak card — PR #8
+- Gentle referral loop (Firestore) — PR #9. `firestore.rules` **DEPLOYED** to `coco-sih`.
+- ASO listing optimized — `STORE_LISTING.md`; push Android metadata with `node scripts/push_listing.mjs`.
+
+Backend is live; client features activate with the new build.
