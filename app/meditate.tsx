@@ -11,6 +11,7 @@ import { meditations, Meditation } from '../lib/data';
 import { meditationCatalog, useTrack } from '../lib/audio';
 import { tap } from '../lib/haptics';
 import { useScreenTracking, Analytics } from '../lib/analytics';
+import { useEntitlement } from '../lib/useEntitlement';
 
 const cats: { id: Meditation['category'] | 'all'; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -23,6 +24,7 @@ const cats: { id: Meditation['category'] | 'all'; label: string }[] = [
 export default function Meditate() {
   useScreenTracking('meditate');
   const { colors } = useTheme();
+  const { isPro } = useEntitlement();
   const [filter, setFilter] = useState<typeof cats[number]['id']>('all');
   const [activeId, setActiveId] = useState<string | null>(null);
   const startRef = useRef<{ id: string; at: number } | null>(null);
@@ -31,6 +33,13 @@ export default function Meditate() {
   const track = useTrack({ loop: false, volume: 0.85 });
 
   function play(id: string) {
+    // Gate premium tracks behind Coco Pro — redirect free users to the paywall.
+    const meta = meditations.find((m) => m.id === id);
+    if (meta?.premium && !isPro) {
+      tap('warn');
+      router.push('/paywall');
+      return;
+    }
     if (id === activeId) {
       track.toggle();
       return;
@@ -71,28 +80,39 @@ export default function Meditate() {
           {list.map((m) => {
             const isActive = activeId === m.id;
             const isPlaying = isActive && track.state.playing;
+            const locked = !!m.premium && !isPro;
             return (
-              <Card key={m.id} accessibilityLabel={`${m.title}, ${m.durationMin} minutes`}>
+              <Card key={m.id} accessibilityLabel={`${m.title}, ${m.durationMin} minutes${locked ? ', Coco Pro' : ''}`}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <View style={[styles.iconRound, { backgroundColor: isActive ? colors.primary : colors.primarySoft }]}>
                     <Ionicons name={iconFor(m.category)} size={20} color={isActive ? colors.primaryFg : colors.primary} />
                   </View>
                   <View style={{ flex: 1, marginLeft: spacing.md }}>
-                    <Text variant="bodyMedium">{m.title}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                      <Text variant="bodyMedium">{m.title}</Text>
+                      {locked ? (
+                        <View style={[styles.proPill, { backgroundColor: colors.primarySoft }]}>
+                          <Ionicons name="sparkles" size={10} color={colors.primary} />
+                          <Text variant="micro" tone="primary" style={{ marginLeft: 3 }}>PRO</Text>
+                        </View>
+                      ) : null}
+                    </View>
                     <Text variant="caption" tone="dim">{m.description}</Text>
                   </View>
                   <Text variant="caption" tone="dim" style={{ marginRight: spacing.sm }}>{m.durationMin} min</Text>
                   <Pressable
                     onPress={() => play(m.id)}
                     accessibilityRole="button"
-                    accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+                    accessibilityLabel={locked ? 'Unlock with Coco Pro' : isPlaying ? 'Pause' : 'Play'}
                     hitSlop={8}
                     style={({ pressed }) => [
                       styles.playBtn,
-                      { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
+                      { backgroundColor: locked ? colors.surfaceMuted : colors.primary, opacity: pressed ? 0.85 : 1 },
                     ]}
                   >
-                    {isActive && track.state.loading ? (
+                    {locked ? (
+                      <Ionicons name="lock-closed" size={15} color={colors.textDim} />
+                    ) : isActive && track.state.loading ? (
                       <ActivityIndicator size="small" color={colors.primaryFg} />
                     ) : (
                       <Ionicons name={isPlaying ? 'pause' : 'play'} size={16} color={colors.primaryFg} />
@@ -168,6 +188,13 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  proPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 999,
   },
 });
 

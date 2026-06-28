@@ -79,14 +79,18 @@ export type Meditation = {
   durationMin: number;
   category: 'mindfulness' | 'sleep' | 'focus' | 'anxiety';
   description: string;
+  // Premium tracks require Coco Pro. The two intro mindfulness sessions and
+  // 'panic-reset' (in-the-moment anxiety relief) stay free so anyone in
+  // distress can always use the app.
+  premium?: boolean;
 };
 
 export const meditations: Meditation[] = [
   { id: 'body-scan', title: 'Body Scan', durationMin: 10, category: 'mindfulness', description: 'Guide attention from head to toe.' },
   { id: 'open-aware', title: 'Open Awareness', durationMin: 8, category: 'mindfulness', description: 'Rest in spacious attention.' },
-  { id: 'wind-down', title: 'Wind Down for Sleep', durationMin: 15, category: 'sleep', description: 'Release the day, enter rest.' },
-  { id: 'rain-sounds', title: 'Rain on a Tin Roof', durationMin: 30, category: 'sleep', description: 'Ambient sound for sleep.' },
-  { id: 'focus-flow', title: 'Focus Flow', durationMin: 12, category: 'focus', description: 'Settle into a single task.' },
+  { id: 'wind-down', title: 'Wind Down for Sleep', durationMin: 15, category: 'sleep', description: 'Release the day, enter rest.', premium: true },
+  { id: 'rain-sounds', title: 'Rain on a Tin Roof', durationMin: 30, category: 'sleep', description: 'Ambient sound for sleep.', premium: true },
+  { id: 'focus-flow', title: 'Focus Flow', durationMin: 12, category: 'focus', description: 'Settle into a single task.', premium: true },
   { id: 'panic-reset', title: 'Panic Reset', durationMin: 5, category: 'anxiety', description: 'Ground yourself when overwhelmed.' },
 ];
 
