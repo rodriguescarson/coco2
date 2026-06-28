@@ -10,11 +10,18 @@ import { Card } from '../../components/ui/Card';
 import { ShareStreakCard } from '../../components/ShareStreakCard';
 import { useTheme, spacing, radius } from '../../lib/theme';
 import { Storage, streakFromCheckins, UserProfile, Prefs } from '../../lib/storage';
-import { useAuth, signOut } from '../../lib/auth';
+import { useAuth, signOut, deleteAccount } from '../../lib/auth';
 import { useEntitlement } from '../../lib/useEntitlement';
 import { useScreenTracking, Analytics } from '../../lib/analytics';
 import { useAiConsent } from '../../lib/consent';
-import { PRIVACY_POLICY_URL, AI_PROVIDER_NAME } from '../../lib/legal';
+import {
+  PRIVACY_POLICY_URL,
+  AI_PROVIDER_NAME,
+  DELETE_ACCOUNT_CONFIRM_TITLE,
+  DELETE_ACCOUNT_CONFIRM_BODY,
+  DELETE_ACCOUNT_REQUIRES_RECENT_LOGIN,
+  DELETE_ACCOUNT_FAILED,
+} from '../../lib/legal';
 
 export default function Profile() {
   useScreenTracking('profile');
@@ -25,6 +32,7 @@ export default function Profile() {
   const [prefs, setPrefs] = useState<Prefs>({ hapticsOn: true, reminders: true });
   const [stats, setStats] = useState({ moods: 0, journals: 0, streak: 0 });
   const [sharing, setSharing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const cardRef = useRef<View>(null);
   const aiConsent = useAiConsent();
 
@@ -86,6 +94,41 @@ export default function Profile() {
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Erase', style: 'destructive', onPress: async () => { await Storage.clearAll(); router.replace('/onboarding'); } },
+      ],
+    );
+  }
+
+  // Account & data deletion — Apple Guideline 5.1.1(v) + GDPR/CCPA. Deletes the
+  // user's synced Firestore data and the Firebase Auth user, then clears local
+  // data and returns to onboarding. Always available; never blocked.
+  function confirmDeleteAccount() {
+    if (deleting) return;
+    const run = async () => {
+      setDeleting(true);
+      const result = await deleteAccount();
+      setDeleting(false);
+      if (result.ok) {
+        await Storage.clearAll();
+        router.replace('/onboarding');
+        return;
+      }
+      if (result.requiresRecentLogin) {
+        Alert.alert('One more step', DELETE_ACCOUNT_REQUIRES_RECENT_LOGIN);
+        return;
+      }
+      Alert.alert('Couldn’t delete account', result.error || DELETE_ACCOUNT_FAILED);
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(`${DELETE_ACCOUNT_CONFIRM_TITLE}\n\n${DELETE_ACCOUNT_CONFIRM_BODY}`)) void run();
+      return;
+    }
+    Alert.alert(
+      DELETE_ACCOUNT_CONFIRM_TITLE,
+      DELETE_ACCOUNT_CONFIRM_BODY,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => void run() },
       ],
     );
   }
@@ -355,6 +398,25 @@ export default function Profile() {
             <Ionicons name="trash-outline" size={18} color={colors.danger} />
             <Text variant="bodyMedium" tone="danger" style={{ marginLeft: 8 }}>Erase all my data</Text>
           </Pressable>
+
+          {auth.available && (
+            <Pressable
+              onPress={confirmDeleteAccount}
+              disabled={deleting}
+              accessibilityRole="button"
+              accessibilityLabel="Delete account"
+              accessibilityHint="Permanently deletes your account and all your synced data"
+              style={({ pressed }) => [
+                styles.danger,
+                { borderColor: colors.danger, backgroundColor: colors.danger, marginTop: spacing.sm, opacity: deleting ? 0.6 : pressed ? 0.7 : 1 },
+              ]}
+            >
+              <Ionicons name="person-remove-outline" size={18} color="#fff" />
+              <Text variant="bodyMedium" style={{ marginLeft: 8, color: '#fff', fontWeight: '700' }}>
+                {deleting ? 'Deleting…' : 'Delete account'}
+              </Text>
+            </Pressable>
+          )}
         </Section>
       </ScrollView>
 
