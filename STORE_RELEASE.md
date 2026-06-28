@@ -106,3 +106,21 @@ fastlane run upload_to_play_store package_name:com.rodriguescarson.coco \
 - ASO listing optimized — `STORE_LISTING.md`; push Android metadata with `node scripts/push_listing.mjs`.
 
 Backend is live; client features activate with the new build.
+
+---
+
+## Ship the growth build — verified commands (2026-06-28)
+
+Local EAS build (no cloud credits) → Play internal / TestFlight (draft). Coco uses
+`autoIncrement: true`, so versionCode/buildNumber bump automatically from the store.
+Run on a Mac with Java 17 + Android SDK + Xcode, `eas whoami` logged in, ~50 GB free
+disk (clear `~/Library/Developer/Xcode/DerivedData` if low).
+
+```
+EAS_NO_VCS=1 npx eas build --platform android --profile production --local --output ./build/coco.aab
+npx eas submit --platform android --profile production --path ./build/coco.aab    # → Play internal (draft)
+
+EAS_NO_VCS=1 npx eas build --platform ios --profile production --local --output ./build/coco.ipa
+npx eas submit --platform ios --profile production --path ./build/coco.ipa         # → TestFlight
+```
+Ships: review prompt (#7), share card (#8), referral loop (#9). Firestore rules already deployed.
