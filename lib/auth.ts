@@ -20,9 +20,16 @@ import {
   createUserWithEmailAndPassword,
   EmailAuthProvider,
   linkWithCredential,
+  deleteUser,
   doc,
   setDoc,
   getDoc,
+  getDocs,
+  deleteDoc,
+  collection,
+  query,
+  where,
+  writeBatch,
   serverTimestamp,
   User,
 } from './firebase';
@@ -98,6 +105,122 @@ export async function signOut(): Promise<void> {
   // so the next signed-in user doesn't inherit this user's entitlement state.
   await logoutPurchases();
   await fbSignOut(fb.auth);
+}
+
+// In-app account & data deletion — Apple App Store Guideline 5.1.1(v) and
+// GDPR/CCPA "right to erasure". Coco has NO Cloud Functions backend, so this
+// runs entirely client-side: we delete the user's Firestore data first, then
+// the Firebase Auth user itself.
+//
+// The Firestore client SDK cannot recursively delete a document tree, so we
+// explicitly enumerate every per-user subcollection (these mirror what Sync /
+// Analytics / Community write) and page through each, deleting every doc.
+export type DeleteAccountResult =
+  | { ok: true }
+  | { ok: false; error: string; requiresRecentLogin?: boolean };
+
+// Subcollections under users/{uid}. Fixed-name single docs (profile/main,
+// community/main, stats/aggregate) live inside these collections too, so a
+// getDocs() sweep of each name covers them without special-casing.
+const USER_SUBCOLLECTIONS = [
+  'profile', // profile/main — PII: name, email, phone, gender
+  'moods',
+  'journals',
+  'checkins',
+  'chats',
+  'bookings',
+  'community', // community/main — handle + guidelines acceptance
+  'blocks',
+  'stats', // stats/aggregate — usage analytics
+  'events', // analytics events
+] as const;
+
+export async function deleteAccount(): Promise<DeleteAccountResult> {
+  const fb = ensureFirebase();
+  if (!fb) return { ok: false, error: 'Sync is not configured on this build.' };
+
+  const current = fb.auth.currentUser;
+  if (!current) return { ok: false, error: 'No one is signed in.' };
+  const uid = current.uid;
+  const db = fb.db;
+
+  // --- 1. Delete all of the user's Firestore data (best-effort per path) -----
+  // Delete a list of doc refs in chunks (Firestore batches cap at 500 writes).
+  const deleteRefs = async (refs: ReturnType<typeof doc>[]): Promise<void> => {
+    for (let i = 0; i < refs.length; i += 400) {
+      const batch = writeBatch(db);
+      for (const ref of refs.slice(i, i + 400)) batch.delete(ref);
+      await batch.commit();
+    }
+  };
+
+  // Every doc in users/{uid}/<name>.
+  for (const name of USER_SUBCOLLECTIONS) {
+    try {
+      const snap = await getDocs(collection(db, 'users', uid, name));
+      await deleteRefs(snap.docs.map((d) => d.ref));
+    } catch {
+      // best-effort: continue so one failing path can't block the rest
+    }
+  }
+
+  // Top-level community posts authored by this user.
+  try {
+    const snap = await getDocs(query(collection(db, 'posts'), where('authorUid', '==', uid)));
+    await deleteRefs(snap.docs.map((d) => d.ref));
+  } catch {
+    // best-effort
+  }
+
+  // Referral graph: docs this user authored (referrerId) and was attributed to
+  // (referredId), plus the public code→uid lookup entry they reserved.
+  try {
+    const [asReferrer, asReferred] = await Promise.all([
+      getDocs(query(collection(db, 'referrals'), where('referrerId', '==', uid))),
+      getDocs(query(collection(db, 'referrals'), where('referredId', '==', uid))),
+    ]);
+    await deleteRefs([...asReferrer.docs, ...asReferred.docs].map((d) => d.ref));
+  } catch {
+    // best-effort
+  }
+
+  // The user's reserved referral code (referralCodes/{CODE}) — read it off the
+  // user doc before we delete that doc below.
+  try {
+    const userSnap = await getDoc(doc(db, 'users', uid));
+    const code = userSnap.exists() ? (userSnap.data().referralCode as string | undefined) : undefined;
+    if (code) await deleteDoc(doc(db, 'referralCodes', code));
+  } catch {
+    // best-effort
+  }
+
+  // Finally the user profile doc itself — this is the PII-bearing root, so it
+  // must succeed. If it throws, surface the failure rather than continuing.
+  try {
+    await deleteDoc(doc(db, 'users', uid));
+  } catch (e) {
+    return { ok: false, error: (e as Error).message ?? 'Could not delete your data.' };
+  }
+
+  // --- 2. Delete the Firebase Auth user --------------------------------------
+  // Reset RevenueCat first so a future install doesn't inherit entitlement.
+  await logoutPurchases().catch(() => {});
+  try {
+    await deleteUser(current);
+    return { ok: true };
+  } catch (e) {
+    const code = (e as { code?: string }).code;
+    if (code === 'auth/requires-recent-login') {
+      // Firebase requires a fresh session to delete the credential. We do NOT
+      // swallow this — the caller must prompt the user to re-authenticate.
+      return {
+        ok: false,
+        requiresRecentLogin: true,
+        error: 'Please sign out and sign back in, then try deleting again.',
+      };
+    }
+    return { ok: false, error: (e as Error).message ?? 'Could not delete your account.' };
+  }
 }
 
 // Email + password. The caller passes the intended mode so we don't guess:

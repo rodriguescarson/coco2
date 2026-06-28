@@ -15,6 +15,7 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   OAuthProvider,
+  deleteUser,
 } from 'firebase/auth';
 import {
   initializeFirestore,
@@ -123,6 +124,7 @@ export {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   OAuthProvider,
+  deleteUser,
   doc,
   setDoc,
   getDoc,
