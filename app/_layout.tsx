@@ -60,6 +60,7 @@ export default function RootLayout() {
           <Stack.Screen name="invite" options={{ presentation: 'modal' }} />
           <Stack.Screen name="paywall" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
           <Stack.Screen name="settings/subscription" />
+          <Stack.Screen name="settings/notifications" />
         </Stack>
         </AuthBootstrap>
       </SafeAreaProvider>

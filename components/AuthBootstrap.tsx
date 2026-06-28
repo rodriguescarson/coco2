@@ -6,6 +6,7 @@ import { Sync } from '../lib/sync';
 import { useAppOpen } from '../lib/analytics';
 import { parseReferralCode } from '../lib/linking';
 import { stashPendingReferral, claimPendingReferral } from '../lib/referrals';
+import { useNotificationBootstrap } from '../lib/useNotifications';
 
 // Bootstraps anonymous auth on app start and runs an initial cloud pull/push
 // once the user is known. Render this once near the root.
@@ -13,6 +14,9 @@ export function AuthBootstrap({ children }: { children: React.ReactNode }) {
   const { user, available } = useAuth();
   const lastUid = useRef<string | null>(null);
   useAppOpen();
+  // Re-registers the push token + reconciles the daily reminder, but only if
+  // the user has already opted in. Never asks for permission on its own.
+  useNotificationBootstrap(user?.uid);
 
   useEffect(() => {
     if (!available || !user) return;

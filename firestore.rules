@@ -26,6 +26,22 @@ service cloud.firestore {
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
 
+      // Push notification tokens. Coco has NO Cloud Functions / server, so the
+      // client-side sendExpoPush() helper must read a *recipient's* tokens to
+      // deliver a nudge. We therefore let any signed-in user READ tokens, while
+      // only the owner may write/delete their own. Tokens are opaque Expo
+      // delivery handles — they carry no mood/journal/crisis or personal data.
+      //
+      // INTEGRITY TRADEOFF: this means a signed-in user who knows another uid
+      // could enqueue an Expo push to them. That is acceptable only for
+      // low-stakes, non-sensitive nudges. If abuse becomes a concern, move
+      // sending behind a trusted server (see Amorelle's push-send function) and
+      // tighten this back to owner-only.
+      match /pushTokens/{token} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == uid;
+      }
+
       match /{collection}/{docId=**} {
         allow read, write: if request.auth != null && request.auth.uid == uid;
       }
