@@ -49,7 +49,8 @@ export type EventName =
   | 'booking_cancelled'
   | 'auth_success'
   | 'auth_failed'
-  | 'profile_updated';
+  | 'profile_updated'
+  | 'streak_shared';
 
 export type TrackedEvent = {
   id: string;

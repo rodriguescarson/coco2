@@ -1,14 +1,17 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ScrollView, View, StyleSheet, Switch, Pressable, Alert, Platform, Linking } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { captureRef } from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
 import { Text } from '../../components/ui/Text';
 import { Card } from '../../components/ui/Card';
+import { ShareStreakCard } from '../../components/ShareStreakCard';
 import { useTheme, spacing, radius } from '../../lib/theme';
 import { Storage, streakFromCheckins, UserProfile, Prefs } from '../../lib/storage';
 import { useAuth, signOut } from '../../lib/auth';
-import { useScreenTracking } from '../../lib/analytics';
+import { useScreenTracking, Analytics } from '../../lib/analytics';
 import { useAiConsent } from '../../lib/consent';
 import { PRIVACY_POLICY_URL, AI_PROVIDER_NAME } from '../../lib/legal';
 
@@ -19,6 +22,8 @@ export default function Profile() {
   const [user, setUser] = useState<UserProfile>({});
   const [prefs, setPrefs] = useState<Prefs>({ hapticsOn: true, reminders: true });
   const [stats, setStats] = useState({ moods: 0, journals: 0, streak: 0 });
+  const [sharing, setSharing] = useState(false);
+  const cardRef = useRef<View>(null);
   const aiConsent = useAiConsent();
 
   const load = useCallback(async () => {
@@ -39,6 +44,31 @@ export default function Profile() {
   async function update(p: Prefs) {
     setPrefs(p);
     await Storage.setPrefs(p);
+  }
+
+  // Opt-in only: user taps "Share my streak". The exported image carries the
+  // streak count and an encouraging line — never moods, journals, or AI/crisis data.
+  async function shareStreak() {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const available = await Sharing.isAvailableAsync();
+      if (!available) {
+        Alert.alert('Sharing unavailable', 'Sharing is not available on this device.');
+        return;
+      }
+      const uri = await captureRef(cardRef, { format: 'png', quality: 1, result: 'tmpfile' });
+      void Analytics.track('streak_shared', { streak: stats.streak });
+      await Sharing.shareAsync(uri, {
+        mimeType: 'image/png',
+        dialogTitle: 'Share your Coco streak',
+        UTI: 'public.png',
+      });
+    } catch {
+      Alert.alert('Could not share', 'Something went wrong creating your streak card. Please try again.');
+    } finally {
+      setSharing(false);
+    }
   }
 
   function confirmClear() {
@@ -119,6 +149,26 @@ export default function Profile() {
           <Stat label="Mood logs" value={stats.moods} colors={colors} />
           <Stat label="Entries" value={stats.journals} colors={colors} />
         </View>
+
+        {/* Gentle, opt-in share. Only the streak count leaves the device — no moods or journals. */}
+        {stats.streak >= 1 && (
+          <Pressable
+            onPress={shareStreak}
+            disabled={sharing}
+            accessibilityRole="button"
+            accessibilityLabel="Share my streak"
+            accessibilityHint="Creates a calm image with your check-in streak that you can choose to share"
+            style={({ pressed }) => [
+              styles.shareRow,
+              { backgroundColor: colors.surface, borderColor: colors.border, opacity: sharing ? 0.6 : pressed ? 0.8 : 1 },
+            ]}
+          >
+            <Ionicons name="share-outline" size={18} color={colors.primary} />
+            <Text variant="caption" tone="primary" style={{ marginLeft: spacing.sm, fontWeight: '700' }}>
+              {sharing ? 'Preparing…' : 'Share my streak'}
+            </Text>
+          </Pressable>
+        )}
 
         <Section title="My bookings">
           <Card onPress={() => router.push('/booking')} accessibilityLabel="View bookings">
@@ -264,6 +314,11 @@ export default function Profile() {
           </Pressable>
         </Section>
       </ScrollView>
+
+      {/* Off-screen render target for the shareable streak card. Never visible to the user. */}
+      <View pointerEvents="none" style={styles.offscreen} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <ShareStreakCard ref={cardRef} streak={stats.streak} name={user.name} />
+      </View>
     </SafeAreaView>
   );
 }
@@ -318,6 +373,23 @@ function Divider() {
 
 const styles = StyleSheet.create({
   statsRow: { flexDirection: 'row', gap: spacing.md },
+  shareRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  offscreen: {
+    position: 'absolute',
+    left: -9999,
+    top: 0,
+    opacity: 0,
+  },
   stat: {
     flex: 1,
     padding: spacing.lg,
