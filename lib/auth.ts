@@ -26,6 +26,7 @@ import {
   serverTimestamp,
   User,
 } from './firebase';
+import { loginPurchases, logoutPurchases } from './purchases';
 
 export type CocoUser = {
   uid: string;
@@ -54,12 +55,17 @@ export function useAuth(): { user: CocoUser | null; ready: boolean; available: b
     const unsub = onAuthStateChanged(fb.auth, async (u) => {
       if (u) {
         setUser(toCocoUser(u));
+        // Keep RevenueCat's appUserID in lock-step with the Firebase uid so a
+        // purchase follows the user across devices (and survives an anonymous →
+        // real-account upgrade, which keeps the same uid). Best-effort.
+        void loginPurchases(u.uid).catch(() => {});
         await touchProfile(u.uid);
       } else {
         // Auto sign-in anonymously so cloud sync works without forcing a sign-in.
         try {
           const cred = await signInAnonymously(fb.auth);
           setUser(toCocoUser(cred.user));
+          void loginPurchases(cred.user.uid).catch(() => {});
           await touchProfile(cred.user.uid);
         } catch {
           setUser(null);
@@ -88,6 +94,9 @@ async function touchProfile(uid: string) {
 export async function signOut(): Promise<void> {
   const fb = ensureFirebase();
   if (!fb) return;
+  // Reset RevenueCat back to an anonymous customer before Firebase signs out,
+  // so the next signed-in user doesn't inherit this user's entitlement state.
+  await logoutPurchases();
   await fbSignOut(fb.auth);
 }
 

@@ -21,6 +21,8 @@ import { useScreenTracking, Analytics } from '../lib/analytics';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useAiConsent } from '../lib/consent';
 import { AiConsentGate } from '../components/AiConsentGate';
+import { useEntitlement } from '../lib/useEntitlement';
+import { getDailyAiRemaining, incrementDailyAiCount, FREE_DAILY_AI_MESSAGES } from '../lib/usage';
 
 const SUGGESTED = [
   'I can\'t sleep',
@@ -34,7 +36,10 @@ export default function Chat() {
   const { colors } = useTheme();
   const { seed } = useLocalSearchParams<{ seed?: string }>();
   const { consented, loading: consentLoading, grant } = useAiConsent();
+  const { isPro } = useEntitlement();
   const [user, setUser] = useState<UserProfile>({});
+  // Free-tier daily message budget. null until loaded; Pro users are unlimited.
+  const [aiRemaining, setAiRemaining] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState(seed ?? '');
   const [sending, setSending] = useState(false);
@@ -63,16 +68,45 @@ export default function Chat() {
     Storage.setChat(messages);
   }, [messages]);
 
+  // Load today's remaining free messages (Pro is unlimited, so skip).
+  useEffect(() => {
+    if (isPro) return;
+    let active = true;
+    getDailyAiRemaining().then((r) => {
+      if (active) setAiRemaining(r);
+    });
+    return () => {
+      active = false;
+    };
+  }, [isPro]);
+
   const send = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
       if (!trimmed || sending) return;
+      const clientCrisis = detectCrisis(trimmed);
+
+      // Free-tier daily cap. Crisis messages are NEVER capped — support must
+      // always reach the user. Otherwise, once a free user is out of messages
+      // for the day, gently route them to Coco Pro instead of sending.
+      if (!isPro && !clientCrisis && aiRemaining !== null && aiRemaining <= 0) {
+        tap('warn');
+        router.push('/paywall');
+        return;
+      }
+
       setError(null);
       const userMsg: ChatMessage = { id: newId(), role: 'user', text: trimmed, at: Date.now() };
       const next = [...messages, userMsg];
       setMessages(next);
       DataWrite.addChat(userMsg);
-      const clientCrisis = detectCrisis(trimmed);
+
+      // Count this against the free daily budget (Pro is unlimited; crisis is
+      // never counted).
+      if (!isPro && !clientCrisis) {
+        void incrementDailyAiCount();
+        setAiRemaining((r) => (r === null ? r : Math.max(0, r - 1)));
+      }
       void Analytics.track('chat_message_sent', { length: trimmed.length, crisisDetected: clientCrisis });
       setDraft('');
       setSending(true);
@@ -110,7 +144,7 @@ export default function Chat() {
         setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
       }
     },
-    [messages, sending, user.name],
+    [messages, sending, user.name, isPro, aiRemaining],
   );
 
   // Gate the first use behind explicit consent: nothing is sent to the AI
@@ -183,6 +217,26 @@ export default function Chat() {
             </View>
           </View>
         )}
+
+        {!isPro && aiRemaining !== null && aiRemaining <= 3 ? (
+          <Pressable
+            onPress={() => router.push('/paywall')}
+            accessibilityRole="button"
+            accessibilityLabel="Unlock unlimited messages with Coco Pro"
+            style={{ paddingHorizontal: spacing.lg, paddingBottom: 8 }}
+          >
+            <View style={[styles.upsell, { backgroundColor: colors.primarySoft, borderColor: colors.primary }]}>
+              <Ionicons name="sparkles" size={14} color={colors.primary} />
+              <Text variant="caption" tone="primary" style={{ flex: 1, marginLeft: 8, fontWeight: '600' }}>
+                {aiRemaining > 0
+                  ? `${aiRemaining} of ${FREE_DAILY_AI_MESSAGES} free messages left today`
+                  : 'Out of free messages today'}
+                {' · '}Go unlimited with Coco Pro
+              </Text>
+              <Ionicons name="chevron-forward" size={14} color={colors.primary} />
+            </View>
+          </Pressable>
+        ) : null}
 
         {error ? (
           <View style={{ paddingHorizontal: spacing.lg, paddingBottom: 8 }}>
@@ -306,6 +360,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  upsell: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
   },
   inputRow: {

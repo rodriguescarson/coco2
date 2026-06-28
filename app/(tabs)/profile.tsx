@@ -11,6 +11,7 @@ import { ShareStreakCard } from '../../components/ShareStreakCard';
 import { useTheme, spacing, radius } from '../../lib/theme';
 import { Storage, streakFromCheckins, UserProfile, Prefs } from '../../lib/storage';
 import { useAuth, signOut } from '../../lib/auth';
+import { useEntitlement } from '../../lib/useEntitlement';
 import { useScreenTracking, Analytics } from '../../lib/analytics';
 import { useAiConsent } from '../../lib/consent';
 import { PRIVACY_POLICY_URL, AI_PROVIDER_NAME } from '../../lib/legal';
@@ -19,6 +20,7 @@ export default function Profile() {
   useScreenTracking('profile');
   const { colors } = useTheme();
   const auth = useAuth();
+  const { isPro } = useEntitlement();
   const [user, setUser] = useState<UserProfile>({});
   const [prefs, setPrefs] = useState<Prefs>({ hapticsOn: true, reminders: true });
   const [stats, setStats] = useState({ moods: 0, journals: 0, streak: 0 });
@@ -194,6 +196,23 @@ export default function Profile() {
               <View style={{ flex: 1, marginLeft: spacing.md }}>
                 <Text variant="bodyMedium">Time, sessions & habits</Text>
                 <Text variant="caption" tone="dim">Where you spend time, what you use most</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+            </View>
+          </Card>
+        </Section>
+
+        <Section title="Coco Pro">
+          <Card onPress={() => router.push(isPro ? '/settings/subscription' : '/paywall')} accessibilityLabel="Coco Pro subscription">
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={[styles.iconRound, { backgroundColor: colors.primarySoft }]}>
+                <Ionicons name={isPro ? 'sparkles' : 'sparkles-outline'} size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text variant="bodyMedium">{isPro ? "You're a Coco Pro" : 'Unlock Coco Pro'}</Text>
+                <Text variant="caption" tone="dim">
+                  {isPro ? 'Manage your subscription' : 'Unlimited AI listener · full calming library'}
+                </Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
             </View>
