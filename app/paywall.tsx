@@ -11,7 +11,7 @@ import { Button } from '../components/ui/Button';
 import { useTheme, spacing, radius } from '../lib/theme';
 import { useEntitlement } from '../lib/useEntitlement';
 import { getOfferingPackages, purchase, restorePurchases } from '../lib/purchases';
-import { PRIVACY_POLICY_URL } from '../lib/legal';
+import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL, AUTO_RENEW_DISCLOSURE } from '../lib/legal';
 import { tap } from '../lib/haptics';
 import { useScreenTracking } from '../lib/analytics';
 
@@ -181,13 +181,16 @@ export default function Paywall() {
                   <Text variant="caption" tone="dim">Restore</Text>
                 </Pressable>
                 <Text variant="caption" tone="faint">·</Text>
+                <Pressable onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL).catch(() => {})} hitSlop={8}>
+                  <Text variant="caption" tone="dim">Terms</Text>
+                </Pressable>
+                <Text variant="caption" tone="faint">·</Text>
                 <Pressable onPress={() => Linking.openURL(PRIVACY_POLICY_URL).catch(() => {})} hitSlop={8}>
                   <Text variant="caption" tone="dim">Privacy</Text>
                 </Pressable>
               </View>
               <Text variant="micro" tone="faint" align="center" style={{ lineHeight: 16 }}>
-                Subscriptions renew automatically until cancelled. Manage or cancel anytime in your
-                {' '}store account settings.
+                {AUTO_RENEW_DISCLOSURE}
               </Text>
             </View>
           </>
