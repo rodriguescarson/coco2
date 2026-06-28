@@ -91,7 +91,7 @@ export async function getOfferingPackages(): Promise<PurchasesPackage[]> {
   if (!Purchases) return [];
   try {
     const offerings = await Purchases.getOfferings();
-    return offerings.current?.availablePackages ?? [];
+    return (offerings.all["coco"] ?? offerings.current)?.availablePackages ?? [];
   } catch {
     return [];
   }
