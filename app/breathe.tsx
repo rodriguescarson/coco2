@@ -11,6 +11,7 @@ import { useTheme, spacing, radius } from '../lib/theme';
 import { breathingPatterns, BreathingPattern } from '../lib/data';
 import { tap } from '../lib/haptics';
 import { useScreenTracking, Analytics } from '../lib/analytics';
+import { maybeAskForReview } from '../lib/review';
 
 export default function Breathe() {
   useScreenTracking('breathe');
@@ -187,7 +188,15 @@ function BreathRunner({ pattern, onExit }: { pattern: BreathingPattern; onExit: 
         <Text variant="caption" tone="dim" style={{ marginTop: 6 }}>{pattern.name} · cycle {cycle}</Text>
       </View>
       <Pressable
-        onPress={() => { onExit(); tap('select'); }}
+        onPress={() => {
+          // A finished breathing session is a calm, positive, non-fragile beat —
+          // the safest place in a mental-health app to ask for a review. Only
+          // count it once the user has actually completed a full cycle, so an
+          // instant bail-out doesn't trigger the prompt.
+          if (cycleRef.current >= 2) void maybeAskForReview();
+          onExit();
+          tap('select');
+        }}
         accessibilityRole="button"
         accessibilityLabel="Stop"
         style={({ pressed }) => [
