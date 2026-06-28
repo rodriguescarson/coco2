@@ -50,7 +50,9 @@ export type EventName =
   | 'auth_success'
   | 'auth_failed'
   | 'profile_updated'
-  | 'streak_shared';
+  | 'streak_shared'
+  | 'invite_shared'
+  | 'referral_claimed';
 
 export type TrackedEvent = {
   id: string;

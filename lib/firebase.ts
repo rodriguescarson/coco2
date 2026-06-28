@@ -35,6 +35,7 @@ import {
   limit,
   getDocs,
   increment,
+  runTransaction,
 } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -137,6 +138,7 @@ export {
   limit,
   getDocs,
   increment,
+  runTransaction,
 };
 
 export type { User };

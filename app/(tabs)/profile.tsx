@@ -200,6 +200,21 @@ export default function Profile() {
           </Card>
         </Section>
 
+        <Section title="Invite a friend">
+          <Card onPress={() => router.push('/invite')} accessibilityLabel="Invite a friend to Coco">
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={[styles.iconRound, { backgroundColor: colors.primarySoft }]}>
+                <Ionicons name="leaf-outline" size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text variant="bodyMedium">Share Coco, gently</Text>
+                <Text variant="caption" tone="dim">Pass it on to someone who might need a calmer moment</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+            </View>
+          </Card>
+        </Section>
+
         <Section title="Preferences">
           <Card style={{ padding: 0 }}>
             <Toggle

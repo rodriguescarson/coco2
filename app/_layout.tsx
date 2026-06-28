@@ -57,6 +57,7 @@ export default function RootLayout() {
           <Stack.Screen name="community/[circleId]" />
           <Stack.Screen name="community/guidelines" options={{ presentation: 'modal' }} />
           <Stack.Screen name="community/moderate" />
+          <Stack.Screen name="invite" options={{ presentation: 'modal' }} />
         </Stack>
         </AuthBootstrap>
       </SafeAreaProvider>
