@@ -50,6 +50,7 @@ export type EventName =
   | 'auth_success'
   | 'auth_failed'
   | 'profile_updated'
+  | 'insights_viewed'
   | 'streak_shared'
   | 'invite_shared'
   | 'referral_claimed';

@@ -132,6 +132,16 @@ export default function Mood() {
                 {last7.length} of last {Math.min(7, list.length)} entries
               </Text>
             </Card>
+            <Pressable
+              onPress={() => { router.push('/insights'); tap('select'); }}
+              accessibilityRole="button"
+              accessibilityLabel="See your full mood patterns"
+              style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: spacing.md, gap: 6, opacity: pressed ? 0.6 : 1 }]}
+            >
+              <Ionicons name="pulse-outline" size={16} color={colors.primary} />
+              <Text variant="caption" tone="primary" style={{ fontWeight: '700' }}>See your full patterns</Text>
+              <Ionicons name="chevron-forward" size={14} color={colors.primary} />
+            </Pressable>
           </View>
         ) : null}
       </ScrollView>

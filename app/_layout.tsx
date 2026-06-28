@@ -49,6 +49,7 @@ export default function RootLayout() {
           <Stack.Screen name="blog" />
           <Stack.Screen name="blog/[id]" />
           <Stack.Screen name="activity" />
+          <Stack.Screen name="insights" />
           <Stack.Screen name="auth/sign-in" options={{ presentation: 'modal' }} />
           <Stack.Screen name="auth/profile-edit" options={{ presentation: 'modal' }} />
           <Stack.Screen name="booking/[therapistId]" options={{ presentation: 'modal' }} />

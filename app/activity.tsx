@@ -34,6 +34,7 @@ const EVENT_LABELS: Record<string, string> = {
   auth_success: 'Signed in',
   auth_failed: 'Sign-in failed',
   profile_updated: 'Updated profile',
+  insights_viewed: 'Viewed your insights',
 };
 
 const SCREEN_LABELS: Record<string, string> = {
@@ -66,6 +67,7 @@ const SCREEN_LABELS: Record<string, string> = {
   'auth/sign-in': 'Sign in',
   'auth/profile-edit': 'Profile edit',
   activity: 'Your activity',
+  insights: 'Insights',
 };
 
 export default function Activity() {
