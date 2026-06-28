@@ -10,6 +10,7 @@ import { useTheme, spacing } from '../lib/theme';
 import { crisisHotlines, groundingSteps } from '../lib/data';
 import { tap } from '../lib/haptics';
 import { useScreenTracking, Analytics } from '../lib/analytics';
+import { pauseRemindersForToday } from '../lib/notifications';
 
 export default function SOS() {
   useScreenTracking('sos');
@@ -17,6 +18,9 @@ export default function SOS() {
 
   useEffect(() => {
     void Analytics.track('sos_opened');
+    // Someone reaching the crisis screen should not be pinged by a wellbeing
+    // nudge today. Stand the daily reminder down; it resumes tomorrow.
+    void pauseRemindersForToday();
   }, []);
 
   function call(phone: string, region?: string) {

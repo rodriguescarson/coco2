@@ -98,6 +98,13 @@
         }
       ],
       "expo-audio",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/adaptive-icon.png",
+          "color": "#0E8A5F"
+        }
+      ],
       "expo-apple-authentication",
       [
         "@react-native-google-signin/google-signin",

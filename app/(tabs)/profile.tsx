@@ -234,18 +234,27 @@ export default function Profile() {
           </Card>
         </Section>
 
+        <Section title="Reminders">
+          <Card onPress={() => router.push('/settings/notifications')} accessibilityLabel="Gentle reminder settings">
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={[styles.iconRound, { backgroundColor: colors.primarySoft }]}>
+                <Ionicons name="notifications-outline" size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text variant="bodyMedium">Gentle reminders</Text>
+                <Text variant="caption" tone="dim">A soft daily check-in, on your terms · quiet hours</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+            </View>
+          </Card>
+        </Section>
+
         <Section title="Preferences">
           <Card style={{ padding: 0 }}>
             <Toggle
               label="Haptic feedback"
               value={!!prefs.hapticsOn}
               onChange={(v) => update({ ...prefs, hapticsOn: v })}
-            />
-            <Divider />
-            <Toggle
-              label="Daily reminder"
-              value={!!prefs.reminders}
-              onChange={(v) => update({ ...prefs, reminders: v })}
             />
             <Divider />
             <Toggle
