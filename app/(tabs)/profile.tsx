@@ -230,6 +230,21 @@ export default function Profile() {
           </Card>
         </Section>
 
+        <Section title="Patterns & insights">
+          <Card onPress={() => router.push('/insights')} accessibilityLabel="See your mood patterns and insights">
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={[styles.iconRound, { backgroundColor: colors.primarySoft }]}>
+                <Ionicons name="pulse-outline" size={20} color={colors.primary} />
+              </View>
+              <View style={{ flex: 1, marginLeft: spacing.md }}>
+                <Text variant="bodyMedium">Your mood patterns</Text>
+                <Text variant="caption" tone="dim">Trends, what lifts you, the rhythm of your days</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textFaint} />
+            </View>
+          </Card>
+        </Section>
+
         <Section title="Your activity">
           <Card onPress={() => router.push('/activity')} accessibilityLabel="See your activity">
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
