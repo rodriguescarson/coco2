@@ -1,0 +1,22 @@
+name: reengage
+
+# Daily, gentle re-engagement win-back for lapsing users. Coco has no server,
+# so this scheduled Action is the "cron". It no-ops cleanly until the
+# FIREBASE_SERVICE_ACCOUNT secret (a FRESH service-account key) is added.
+on:
+  schedule:
+    - cron: "0 23 * * *" # 23:00 UTC daily
+  workflow_dispatch: {} # allow manual runs for testing
+
+jobs:
+  reengage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install --no-save firebase-admin@12
+      - run: node scripts/reengage.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
