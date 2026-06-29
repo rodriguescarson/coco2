@@ -1,0 +1,20 @@
+title = "gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Lockfile integrity hashes, public-by-design Firebase keys, templates, ASC issuer id"
+paths = [
+  '''Podfile\.lock''',
+  '''package-lock\.json''',
+  '''yarn\.lock''',
+  '''pnpm-lock\.yaml''',
+  '''\.env\.example''',
+  '''\.env\.sample''',
+  '''google-services\.json''',
+  '''GoogleService-Info\.plist''',
+]
+regexes = [
+  '''ascApiKeyIssuerId''',
+]
