@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "primaryColor": "#0E8A5F",
-    "description": "A quiet companion for your mind. Mood, journal, breathing, sleep, daily check-ins, an AI listener, and a directory of crisis resources \u2014 all in one calm app.",
+    "description": "A quiet companion for your mind. Mood, journal, breathing, sleep, daily check-ins, an AI listener, and a directory of crisis resources — all in one calm app.",
     "githubUrl": "https://github.com/rodriguescarson/coco2",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -110,6 +110,18 @@
         "@react-native-google-signin/google-signin",
         {
           "iosUrlScheme": "com.googleusercontent.apps.522896815441-5as5ihtg0sll3cduopqcop1f43phub0b"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraPods": [
+              { "name": "GoogleUtilities", "modular_headers": true },
+              { "name": "RecaptchaInterop", "modular_headers": true },
+              { "name": "AppCheckCore", "modular_headers": true }
+            ]
+          }
         }
       ]
     ],
