@@ -53,10 +53,12 @@ platform :ios do
     api_key = asc_api_key
 
     # One above the latest build already on TestFlight for this version.
+    # Global latest across all version trains (build numbers must be unique
+    # app-wide, not just within a marketing version) — avoids collisions when
+    # a new marketing version has fewer builds than an older one.
     latest = latest_testflight_build_number(
       api_key: api_key,
       app_identifier: PACKAGE_NAME,
-      version: APP_VERSION,
       initial_build_number: 0,
     )
     # CFBundleVersion is a literal in the Expo-generated Info.plist, so set it
